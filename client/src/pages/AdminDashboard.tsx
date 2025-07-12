@@ -22,6 +22,8 @@ export default function AdminDashboard() {
   const [showPostScheduler, setShowPostScheduler] = useState(false);
   const [postForClientId, setPostForClientId] = useState<number | undefined>(undefined);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'publish' | 'analyze' | 'engage'>('publish');
   
   const handleClientSelect = (clientId: number) => {
     setSelectedClientId(clientId);
@@ -140,13 +142,34 @@ export default function AdminDashboard() {
             </div>
             
             <nav className="flex items-center gap-6">
-              <button className="text-blue-600 border-b-2 border-blue-600 pb-4 px-2 font-medium">
+              <button 
+                onClick={() => setActiveTab('publish')}
+                className={`pb-4 px-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'publish' 
+                    ? 'text-blue-600 border-blue-600' 
+                    : 'text-gray-600 hover:text-gray-900 border-transparent'
+                }`}
+              >
                 Publish
               </button>
-              <button className="text-gray-600 hover:text-gray-900 pb-4 px-2">
+              <button 
+                onClick={() => setActiveTab('analyze')}
+                className={`pb-4 px-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'analyze' 
+                    ? 'text-blue-600 border-blue-600' 
+                    : 'text-gray-600 hover:text-gray-900 border-transparent'
+                }`}
+              >
                 Analyze
               </button>
-              <button className="text-gray-600 hover:text-gray-900 pb-4 px-2">
+              <button 
+                onClick={() => setActiveTab('engage')}
+                className={`pb-4 px-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'engage' 
+                    ? 'text-blue-600 border-blue-600' 
+                    : 'text-gray-600 hover:text-gray-900 border-transparent'
+                }`}
+              >
                 Engage
               </button>
             </nav>
@@ -158,7 +181,7 @@ export default function AdminDashboard() {
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
-              New Post
+              New
             </Button>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Welcome, {user?.name}</span>
@@ -172,21 +195,53 @@ export default function AdminDashboard() {
 
       {/* Buffer-style Layout */}
       <div className="flex w-full pt-16">
-        {/* Left Sidebar - Channels */}
-        <div className="w-64 bg-gray-50 border-r border-gray-200 h-screen overflow-y-auto">
+        {/* Collapsible Left Sidebar - Channels */}
+        <div 
+          className={`${
+            sidebarExpanded ? 'w-64' : 'w-16'
+          } bg-gray-50 border-r border-gray-200 h-screen overflow-hidden transition-all duration-300 ease-in-out relative`}
+          onMouseEnter={() => setSidebarExpanded(true)}
+          onMouseLeave={() => setSidebarExpanded(false)}
+        >
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-900">Channels</h2>
-              <button className="p-1 hover:bg-gray-200 rounded">
-                <Plus className="w-4 h-4 text-gray-600" />
-              </button>
+              {sidebarExpanded ? (
+                <>
+                  <h2 className="font-semibold text-gray-900">Channels</h2>
+                  <button className="p-1 hover:bg-gray-200 rounded">
+                    <Plus className="w-4 h-4 text-gray-600" />
+                  </button>
+                </>
+              ) : (
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mx-auto">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
             
-            <ClientManagerSidebar
-              selectedClientId={selectedClientId}
-              onClientSelect={handleClientSelect}
-              onCreatePostForClient={handleCreatePostForClient}
-            />
+            {sidebarExpanded && (
+              <div className="animate-in fade-in duration-200">
+                <ClientManagerSidebar
+                  selectedClientId={selectedClientId}
+                  onClientSelect={handleClientSelect}
+                  onCreatePostForClient={handleCreatePostForClient}
+                />
+              </div>
+            )}
+            
+            {!sidebarExpanded && (
+              <div className="space-y-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto">
+                  <span className="text-xs font-bold text-blue-600">AC</span>
+                </div>
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mx-auto">
+                  <span className="text-xs font-bold text-green-600">TI</span>
+                </div>
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mx-auto">
+                  <span className="text-xs font-bold text-purple-600">MP</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -195,7 +250,11 @@ export default function AdminDashboard() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <h1 className="text-2xl font-bold text-gray-900">All Channels</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {activeTab === 'publish' && 'All Channels'}
+                  {activeTab === 'analyze' && 'Analytics'}
+                  {activeTab === 'engage' && 'Engagement'}
+                </h1>
                 {selectedClientId && (
                   <Badge variant="secondary">
                     Client #{selectedClientId} Selected
@@ -205,10 +264,14 @@ export default function AdminDashboard() {
               
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm">
-                  Calendar
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Share Feedback
                 </Button>
                 <Button variant="outline" size="sm">
                   List
+                </Button>
+                <Button variant="outline" size="sm">
+                  Calendar
                 </Button>
                 <Button 
                   onClick={() => setShowPostScheduler(true)}
@@ -220,78 +283,109 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Buffer-style Tabs */}
-            <div className="border-b border-gray-200 mb-6">
-              <nav className="flex gap-8">
-                <button className="pb-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium">
-                  Queue <span className="ml-1 text-sm text-gray-500">1</span>
-                </button>
-                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
-                  Drafts <span className="ml-1 text-sm text-gray-500">0</span>
-                </button>
-                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
-                  Approvals <span className="ml-1 text-sm text-gray-500">4</span>
-                </button>
-                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
-                  Sent <span className="ml-1 text-sm text-gray-500">99</span>
-                </button>
-              </nav>
-            </div>
+            {/* Content based on active tab */}
+            {activeTab === 'publish' && (
+              <>
+                {/* Buffer-style Tabs */}
+                <div className="border-b border-gray-200 mb-6">
+                  <nav className="flex gap-8">
+                    <button className="pb-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium">
+                      Queue <span className="ml-1 text-sm text-gray-500">1</span>
+                    </button>
+                    <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                      Drafts <span className="ml-1 text-sm text-gray-500">0</span>
+                    </button>
+                    <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                      Approvals <span className="ml-1 text-sm text-gray-500">4</span>
+                    </button>
+                    <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                      Sent <span className="ml-1 text-sm text-gray-500">99</span>
+                    </button>
+                  </nav>
+                </div>
 
-            {/* Posts Content Area */}
-            <div className="space-y-4">
-              {posts && posts.length > 0 ? (
-                posts.map((post: any) => (
-                  <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Users className="w-4 h-4 text-blue-600" />
+                {/* Posts Content Area */}
+                <div className="space-y-4">
+                  {posts && posts.length > 0 ? (
+                    posts.map((post: any) => (
+                      <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Users className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <span className="text-sm text-gray-600">Client #{post.userId}</span>
+                              <Badge className={`${getStatusColor(post.status)} text-xs`}>
+                                {post.status}
+                              </Badge>
+                            </div>
+                            
+                            <h3 className="font-semibold text-gray-900 mb-2">{post.title}</h3>
+                            <p className="text-gray-700 mb-4">{post.content}</p>
+                            
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              {post.scheduledAt && (
+                                <span>Scheduled: {formatDate(post.scheduledAt)}</span>
+                              )}
+                              <span>Platforms: {post.platforms?.join(', ') || 'None'}</span>
+                            </div>
                           </div>
-                          <span className="text-sm text-gray-600">Client #{post.userId}</span>
-                          <Badge className={`${getStatusColor(post.status)} text-xs`}>
-                            {post.status}
-                          </Badge>
-                        </div>
-                        
-                        <h3 className="font-semibold text-gray-900 mb-2">{post.title}</h3>
-                        <p className="text-gray-700 mb-4">{post.content}</p>
-                        
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          {post.scheduledAt && (
-                            <span>Scheduled: {formatDate(post.scheduledAt)}</span>
-                          )}
-                          <span>Platforms: {post.platforms?.join(', ') || 'None'}</span>
+                          
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button variant="outline" size="sm">
+                              Retry Now
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-2 ml-4">
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          Publish Now
-                        </Button>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-md mx-auto">
+                        <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mx-auto mb-4">
+                          <Clock className="w-6 h-6 text-yellow-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Not Published</h3>
+                        <p className="text-gray-600 mb-4">
+                          Uhoh, it looks like this post is stuck processing. Retrying the post should work. If you still can run into troubles, get in touch!
+                        </p>
+                        <div className="flex items-center gap-3 justify-center">
+                          <Button 
+                            onClick={() => setShowPostScheduler(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Retry Now
+                          </Button>
+                          <Button variant="outline">
+                            Get in Touch
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
-                  <p className="text-gray-600 mb-4">Create your first post to get started</p>
-                  <Button 
-                    onClick={() => setShowPostScheduler(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Post
-                  </Button>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
+
+            {activeTab === 'analyze' && (
+              <div className="text-center py-12">
+                <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Analytics Dashboard</h3>
+                <p className="text-gray-600">View detailed analytics for all your client accounts</p>
+              </div>
+            )}
+
+            {activeTab === 'engage' && (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Engagement Hub</h3>
+                <p className="text-gray-600">Manage interactions and responses across all platforms</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
