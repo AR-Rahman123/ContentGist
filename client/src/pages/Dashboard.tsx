@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, FileText, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Users } from 'lucide-react';
 import { useLocation } from 'wouter';
+import PostScheduler from '@/components/PostScheduler';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const [showPostScheduler, setShowPostScheduler] = useState(false);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/dashboard/stats'],
@@ -47,18 +49,41 @@ export default function Dashboard() {
     });
   };
 
+  if (showPostScheduler) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowPostScheduler(false)}
+              className="mb-4"
+            >
+              ← Back to Dashboard
+            </Button>
+          </div>
+          <PostScheduler onClose={() => setShowPostScheduler(false)} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">ContentGist Dashboard</h1>
+            <div className="flex items-center gap-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">ContentGist Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Welcome, {user?.name}</span>
+              <span className="text-sm text-gray-500">Welcome back, {user?.name}</span>
               <Button variant="outline" size="sm" onClick={() => setLocation('/')}>
+                <Users className="w-4 h-4 mr-2" />
                 Home
               </Button>
               <Button variant="outline" size="sm" onClick={logout}>
@@ -69,48 +94,84 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8">
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to create amazing content?</h2>
+                <p className="text-gray-600">Schedule your next post or manage your content calendar</p>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={() => setShowPostScheduler(true)}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Post
+                </Button>
+                <Button variant="outline" onClick={() => setLocation('/pricing')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Upgrade Plan
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-blue-800">Total Posts</CardTitle>
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <FileText className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{statsLoading ? '...' : stats?.totalPosts || 0}</div>
+              <div className="text-3xl font-bold text-blue-900">{statsLoading ? '...' : stats?.totalPosts || 0}</div>
+              <p className="text-xs text-blue-600 mt-1">All time</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-orange-800">Scheduled</CardTitle>
+              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <Clock className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{statsLoading ? '...' : stats?.scheduledPosts || 0}</div>
+              <div className="text-3xl font-bold text-orange-900">{statsLoading ? '...' : stats?.scheduledPosts || 0}</div>
+              <p className="text-xs text-orange-600 mt-1">Upcoming</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Posted</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-green-800">Posted</CardTitle>
+              <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{statsLoading ? '...' : stats?.postedPosts || 0}</div>
+              <div className="text-3xl font-bold text-green-900">{statsLoading ? '...' : stats?.postedPosts || 0}</div>
+              <p className="text-xs text-green-600 mt-1">This month</p>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Posts Remaining</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-purple-800">Posts Remaining</CardTitle>
+              <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                <Calendar className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{statsLoading ? '...' : stats?.postsRemaining || 0}</div>
+              <div className="text-3xl font-bold text-purple-900">{statsLoading ? '...' : stats?.postsRemaining || 0}</div>
               {stats?.plan && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-purple-600 mt-1">
                   {stats.plan.name} Plan
                 </p>
               )}
@@ -120,9 +181,12 @@ export default function Dashboard() {
 
         {/* Subscription Status */}
         {!stats?.plan && (
-          <Card className="mb-6 border-orange-200 bg-orange-50">
+          <Card className="mb-8 border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-orange-800">No Active Subscription</CardTitle>
+              <CardTitle className="text-orange-800 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                No Active Subscription
+              </CardTitle>
               <CardDescription className="text-orange-700">
                 You need an active subscription to receive scheduled posts.
               </CardDescription>

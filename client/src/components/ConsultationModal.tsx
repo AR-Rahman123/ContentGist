@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Send, CheckCircle, AlertCircle, Calendar, DollarSign, MessageSquare } from 'lucide-react';
 import { sendConsultationEmail } from '../services/emailService';
 
 interface ConsultationModalProps {
@@ -12,6 +12,8 @@ interface FormData {
   email: string;
   phone: string;
   message: string;
+  consultationType: 'pricing' | 'consultation';
+  postsPerWeek?: number;
 }
 
 interface FormErrors {
@@ -25,7 +27,9 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose }
     name: '',
     email: '',
     phone: '',
-    message: ''
+    message: '',
+    consultationType: 'consultation',
+    postsPerWeek: 3
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -69,11 +73,18 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose }
     setSubmitStatus('idle');
 
     try {
-      // Send email using EmailJS
-      await sendConsultationEmail(formData);
+      // Send email using EmailJS with enhanced data
+      const emailData = {
+        ...formData,
+        message: formData.consultationType === 'pricing' 
+          ? `Pricing Inquiry - ${formData.postsPerWeek} posts per week\n\n${formData.message}`
+          : formData.message
+      };
+      
+      await sendConsultationEmail(emailData);
       
       setSubmitStatus('success');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', message: '', consultationType: 'consultation', postsPerWeek: 3 });
       setErrors({});
       
       // Auto-close modal after success
@@ -102,7 +113,7 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose }
   const handleClose = () => {
     onClose();
     setSubmitStatus('idle');
-    setFormData({ name: '', email: '', phone: '', message: '' });
+    setFormData({ name: '', email: '', phone: '', message: '', consultationType: 'consultation', postsPerWeek: 3 });
     setErrors({});
   };
 
@@ -117,10 +128,13 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose }
       ></div>
       
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-900">Free Consultation</h2>
+        <div className="flex items-center justify-between p-8 border-b border-slate-200">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">Let's Work Together</h2>
+            <p className="text-lg text-gray-600">Choose how you'd like to get started with ContentGist.</p>
+          </div>
           <button
             onClick={handleClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
@@ -130,7 +144,92 @@ const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, onClose }
         </div>
         
         {/* Content */}
-        <div className="p-6">
+        <div className="p-8">
+          {/* Consultation Type Selection */}
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-700 mb-4">
+              What are you looking for?
+            </label>
+            <div className="grid md:grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, consultationType: 'pricing' }))}
+                className={`p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                  formData.consultationType === 'pricing'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.consultationType === 'pricing' ? 'bg-blue-500' : 'bg-gray-400'
+                  }`}>
+                    <DollarSign className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Custom Pricing</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Get a personalized quote based on your posting frequency and needs.
+                </p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, consultationType: 'consultation' }))}
+                className={`p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                  formData.consultationType === 'consultation'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    formData.consultationType === 'consultation' ? 'bg-blue-500' : 'bg-gray-400'
+                  }`}>
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-900">Free Consultation</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Discuss your strategy, goals, and how we can help grow your presence.
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Weekly Posts Selection (only for pricing) */}
+          {formData.consultationType === 'pricing' && (
+            <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
+              <label className="block text-sm font-medium text-gray-700 mb-4">
+                How many posts per week do you need?
+              </label>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {[3, 5, 7, 10, 14, 21].map(count => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, postsPerWeek: count }))}
+                    className={`p-3 rounded-lg border-2 font-semibold transition-all duration-300 ${
+                      formData.postsPerWeek === count
+                        ? 'border-blue-500 bg-blue-500 text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
+                    }`}
+                  >
+                    {count} posts
+                  </button>
+                ))}
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Estimated weekly cost:</span>
+                  <span className="text-2xl font-bold text-blue-600">${Math.ceil((formData.postsPerWeek || 3) * 15)}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Final pricing may vary based on content complexity and platform requirements.
+                </p>
+              </div>
+            </div>
+          )}
           {submitStatus === 'success' ? (
             <div className="text-center py-8">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />

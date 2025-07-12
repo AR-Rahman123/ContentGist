@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Check, Calendar, Users, BarChart3 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAuth } from '@/contexts/AuthContext';
+import { useQuery } from '@tanstack/react-query';
 import ConsultationModal from './ConsultationModal';
 
 const Hero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
+  const { data: plans } = useQuery({
+    queryKey: ['/api/plans'],
+  });
+
   const scrollToPortfolio = () => {
     const element = document.getElementById('portfolio');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToScheduling = () => {
+    const element = document.getElementById('scheduling');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
@@ -49,10 +61,10 @@ const Hero = () => {
                   </button>
                 </Link>
                 <button 
-                  onClick={scrollToPortfolio}
+                  onClick={scrollToScheduling}
                   className="px-8 py-4 border-2 border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 active:scale-95"
                 >
-                  View Our Work
+                  See How It Works
                 </button>
               </>
             ) : (
@@ -72,6 +84,57 @@ const Hero = () => {
               </>
             )}
           </div>
+
+          {/* Pricing Preview */}
+          {plans && (
+            <div className="mt-16 animate-slide-up delay-600">
+              <p className="text-slate-300 mb-8 text-lg">Choose your posting plan:</p>
+              <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                {plans.map((plan: any, index: number) => (
+                  <div 
+                    key={plan.id}
+                    className={`relative p-6 rounded-2xl backdrop-blur-sm border transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+                      index === 1 
+                        ? 'bg-white/10 border-blue-400/50 shadow-lg' 
+                        : 'bg-white/5 border-white/20 hover:bg-white/10'
+                    }`}
+                  >
+                    {index === 1 && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                        Most Popular
+                      </div>
+                    )}
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold text-white">${plan.price}</span>
+                        <span className="text-slate-300">/month</span>
+                      </div>
+                      <div className="text-slate-300 mb-4">
+                        <div className="flex items-center justify-center mb-2">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          {plan.postsLimit} posts/month
+                        </div>
+                        <div className="flex items-center justify-center">
+                          <BarChart3 className="w-4 h-4 mr-2" />
+                          Analytics included
+                        </div>
+                      </div>
+                      <Link href={isAuthenticated ? "/pricing" : "/register"}>
+                        <button className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
+                          index === 1
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 shadow-lg'
+                            : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                        }`}>
+                          {isAuthenticated ? 'Select Plan' : 'Get Started'}
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

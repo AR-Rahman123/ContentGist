@@ -8,6 +8,7 @@ import { queryClient } from './lib/queryClient';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Services from './components/Services';
+import SchedulingExplainer from './components/SchedulingExplainer';
 import WhyChooseUs from './components/WhyChooseUs';
 import Portfolio from './components/Portfolio';
 import Testimonials from './components/Testimonials';
@@ -29,6 +30,7 @@ const LandingPage = () => {
       <Header />
       <Hero />
       <Services />
+      <SchedulingExplainer />
       <WhyChooseUs />
       <Portfolio />
       <Testimonials />
