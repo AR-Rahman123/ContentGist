@@ -22,6 +22,7 @@ import Register from './pages/Register';
 import Pricing from './pages/Pricing';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ClientDashboard from './pages/ClientDashboard';
 import OAuthDemoPage from './pages/OAuthDemo';
 
 // Landing Page Component
@@ -82,7 +83,7 @@ function AppContent() {
         <Route path="/pricing" component={Pricing} />
         <Route path="/dashboard">
           <ProtectedRoute>
-            <Dashboard />
+            <ClientDashboard />
           </ProtectedRoute>
         </Route>
         <Route path="/admin">

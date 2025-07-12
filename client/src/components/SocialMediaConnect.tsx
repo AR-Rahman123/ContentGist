@@ -16,7 +16,15 @@ interface SocialAccount {
   createdAt: string;
 }
 
-const SocialMediaConnect: React.FC = () => {
+interface SocialMediaConnectProps {
+  maxAccounts?: number;
+  showTutorialButton?: boolean;
+}
+
+const SocialMediaConnect: React.FC<SocialMediaConnectProps> = ({ 
+  maxAccounts, 
+  showTutorialButton = true 
+}) => {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -91,6 +99,12 @@ const SocialMediaConnect: React.FC = () => {
   };
 
   const handleConnect = (platform: string) => {
+    // Check if user has reached their account limit
+    if (maxAccounts && socialAccounts && socialAccounts.length >= maxAccounts) {
+      alert('You have reached your account connection limit for your current plan. Please upgrade to connect more accounts.');
+      return;
+    }
+
     // For demo purposes, we'll create a mock connection
     setConnecting(platform);
     
@@ -149,23 +163,25 @@ const SocialMediaConnect: React.FC = () => {
         <p className="text-gray-600 mb-4">
           Connect your accounts so we can post content directly to your social media platforms
         </p>
-        <div className="flex justify-center gap-3 mb-6">
-          <Button 
-            variant="outline"
-            onClick={() => window.open('/oauth-demo', '_blank')}
-            className="flex items-center gap-2"
-          >
-            <Shield className="w-4 h-4" />
-            Security Guide
-          </Button>
-          <Button 
-            onClick={() => setShowTutorial(true)}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-          >
-            <Play className="w-4 h-4" />
-            Interactive Tutorial
-          </Button>
-        </div>
+        {showTutorialButton && (
+          <div className="flex justify-center gap-3 mb-6">
+            <Button 
+              variant="outline"
+              onClick={() => window.open('/oauth-demo', '_blank')}
+              className="flex items-center gap-2"
+            >
+              <Shield className="w-4 h-4" />
+              Security Guide
+            </Button>
+            <Button 
+              onClick={() => setShowTutorial(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+            >
+              <Play className="w-4 h-4" />
+              Interactive Tutorial
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

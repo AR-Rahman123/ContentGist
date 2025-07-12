@@ -84,6 +84,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's plan information
+  app.get('/api/user/plan', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      let plan = null;
+      if (user.planId) {
+        plan = await storage.getPlan(user.planId);
+      } else {
+        // Get default plan if user has no plan
+        const plans = await storage.getAllPlans();
+        plan = plans.find(p => p.name === 'Basic') || plans[0];
+      }
+
+      if (!plan) {
+        return res.status(404).json({ message: 'Plan not found' });
+      }
+
+      // Add account limits and features based on plan
+      const planWithLimits = {
+        ...plan,
+        accountsLimit: plan.name === 'Basic' ? 2 : plan.name === 'Pro' ? 5 : 10,
+        features: [
+          `Up to ${plan.postsLimit} posts per month`,
+          `${plan.name === 'Basic' ? 2 : plan.name === 'Pro' ? 5 : 10} social media accounts`,
+          'Automated posting',
+          'Content scheduling',
+          ...(plan.name !== 'Basic' ? ['Analytics dashboard', 'Priority support'] : []),
+          ...(plan.name === 'Enterprise' ? ['Custom integrations', 'Dedicated manager'] : [])
+        ]
+      };
+
+      res.json(planWithLimits);
+    } catch (error) {
+      console.error('Get user plan error:', error);
+      res.status(500).json({ message: 'Failed to get user plan' });
+    }
+  });
+
   // Protected routes
   app.get('/api/auth/me', authenticateToken, async (req: AuthRequest, res) => {
     const user = await storage.getUser(req.user!.id);

@@ -379,7 +379,7 @@ export default function AdminDashboard() {
                     How OAuth Works
                   </Button>
                 </div>
-                <SocialMediaConnect />
+                <SocialMediaConnect showTutorialButton={false} />
               </div>
             )}
 
