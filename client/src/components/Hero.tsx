@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { Link } from 'wouter';
+import { useAuth } from '@/contexts/AuthContext';
 import ConsultationModal from './ConsultationModal';
 
 const Hero = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const scrollToPortfolio = () => {
     const element = document.getElementById('portfolio');
@@ -33,23 +36,41 @@ const Hero = () => {
           </h1>
           
           <p className="text-xl md:text-2xl text-slate-300 mb-10 max-w-3xl mx-auto leading-relaxed animate-slide-up delay-200">
-            We craft and post engaging content that drives growth, builds communities, and delivers measurable results for your business.
+            We craft and post engaging content that drives growth, builds communities, and delivers measurable results for your business. Get started with our automated posting platform today.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up delay-400">
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center group active:scale-95"
-            >
-              Get Free Consultation
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button 
-              onClick={scrollToPortfolio}
-              className="px-8 py-4 border-2 border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 active:scale-95"
-            >
-              View Our Work
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Link href="/dashboard">
+                  <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center group active:scale-95">
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+                <button 
+                  onClick={scrollToPortfolio}
+                  className="px-8 py-4 border-2 border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 active:scale-95"
+                >
+                  View Our Work
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/register">
+                  <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center group active:scale-95">
+                    Start Free Trial
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </Link>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-8 py-4 border-2 border-white/20 text-white rounded-xl font-semibold hover:bg-white/10 transition-all duration-300 active:scale-95"
+                >
+                  Get Consultation
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>

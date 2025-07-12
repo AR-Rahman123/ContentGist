@@ -1,0 +1,46 @@
+I want you to generate a full SaaS web app using Node.js with Express and EJS (or React if needed), plus SQLite or PostgreSQL.
+
+Business name: Content Gist.
+
+The web app should do the following:
+
+1️⃣ **Authentication & Membership**
+- Allow new users to sign up with email and password.
+- Support login/logout sessions.
+- Integrate Stripe for paid plans: Basic, Pro, Premium. Each plan has different prices and limits on how many posts I can schedule for them per month.
+
+2️⃣ **Dashboard for each user**
+- After login, users see a clean, modern dashboard with a welcome message.
+- The dashboard shows a list of posts scheduled for them (created by the admin/me).
+- Users can see status: Scheduled, Posted, or Draft.
+
+3️⃣ **Admin functionality for me**
+- I can log in as admin and create new posts for each user.
+- I can schedule posts with content and future date/time.
+- Admin dashboard shows all users and their plan, payment status, and post limits.
+
+4️⃣ **Scheduling system**
+- Use a scheduler (like node-cron) to check posts that need to be posted at scheduled time.
+- When time arrives, mark post as Posted (for now just simulate; later we can connect to social media APIs).
+
+5️⃣ **Stripe integration**
+- Stripe payment checkout when user signs up or upgrades.
+- Store user’s payment status and plan in DB.
+
+6️⃣ **Database schema**
+- Tables: users, posts, plans, payments.
+- Each post belongs to a user, has content, scheduled time, status.
+
+7️⃣ **UI/UX design**
+- Clean, business-friendly, modern design.
+- Light theme with blue and teal accents.
+- Rounded buttons, good typography (Inter or Roboto).
+- Responsive for desktop and mobile.
+
+8️⃣ **Extra details**
+- Send email notifications when a post is scheduled or posted (optional, if too much skip for now).
+- Provide an easy "add new post" form in admin dashboard to assign posts to users.
+
+Name the project "content-gist". Add a README file explaining how to run it. Make it fully working, so I can copy to Replit and run immediately.
+
+Please generate complete code files including package.json, index.js (or app.js), EJS or React frontend views, public CSS, and database setup scripts if needed.

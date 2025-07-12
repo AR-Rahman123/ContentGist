@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const [location] = useLocation();
 
   const navItems = [
     { id: 'home', label: 'Home' },
@@ -52,19 +57,53 @@ const Header = () => {
           </div>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`text-sm font-medium transition-colors duration-300 hover:text-blue-400 ${
-                  activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+          <div className="hidden md:flex items-center space-x-8">
+            {location === '/' && (
+              <nav className="flex space-x-8">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`text-sm font-medium transition-colors duration-300 hover:text-blue-400 ${
+                      activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+            )}
+            
+            {/* Authentication Buttons */}
+            <div className="flex items-center space-x-4">
+              {isAuthenticated ? (
+                <>
+                  <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                    <Button variant="ghost" size="sm" className="text-slate-300 hover:text-blue-400">
+                      {isAdmin ? 'Admin' : 'Dashboard'}
+                    </Button>
+                  </Link>
+                  <span className="text-sm text-slate-400">Hi, {user?.name}</span>
+                  <Button variant="outline" size="sm" onClick={logout}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" size="sm" className="text-slate-300 hover:text-blue-400">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
           
           {/* Mobile Menu Button */}
           <button
@@ -79,19 +118,53 @@ const Header = () => {
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 right-0 bg-slate-900/98 backdrop-blur-sm border-b border-slate-800">
-          <nav className="px-6 py-4 space-y-4">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`block w-full text-left text-lg font-medium transition-colors duration-300 hover:text-blue-400 ${
-                  activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+          <div className="px-6 py-4 space-y-4">
+            {location === '/' && (
+              <nav className="space-y-4 border-b border-slate-700 pb-4 mb-4">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`block w-full text-left text-lg font-medium transition-colors duration-300 hover:text-blue-400 ${
+                      activeSection === item.id ? 'text-blue-400' : 'text-slate-300'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+            )}
+            
+            {/* Mobile Authentication */}
+            <div className="space-y-3">
+              {isAuthenticated ? (
+                <>
+                  <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                    <Button variant="ghost" className="w-full justify-start text-slate-300">
+                      {isAdmin ? 'Admin Dashboard' : 'Dashboard'}
+                    </Button>
+                  </Link>
+                  <div className="text-sm text-slate-400 px-3">Hi, {user?.name}</div>
+                  <Button variant="outline" onClick={logout} className="w-full">
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost" className="w-full justify-start text-slate-300">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </header>
