@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Facebook, Instagram, Twitter, Linkedin, Youtube, Plus, Check, AlertCircle } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Linkedin, Youtube, Plus, Check, AlertCircle, Shield, Play } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import OAuthTutorial from './OAuthTutorial';
 
 interface SocialAccount {
   id: number;
@@ -16,6 +18,7 @@ interface SocialAccount {
 
 const SocialMediaConnect: React.FC = () => {
   const [connecting, setConnecting] = useState<string | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const { data: socialAccounts, isLoading } = useQuery<SocialAccount[]>({
     queryKey: ['/api/social-accounts'],
@@ -143,9 +146,26 @@ const SocialMediaConnect: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Connect Your Social Media Accounts</h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 mb-4">
           Connect your accounts so we can post content directly to your social media platforms
         </p>
+        <div className="flex justify-center gap-3 mb-6">
+          <Button 
+            variant="outline"
+            onClick={() => window.open('/oauth-demo', '_blank')}
+            className="flex items-center gap-2"
+          >
+            <Shield className="w-4 h-4" />
+            Security Guide
+          </Button>
+          <Button 
+            onClick={() => setShowTutorial(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+          >
+            <Play className="w-4 h-4" />
+            Interactive Tutorial
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -270,6 +290,16 @@ const SocialMediaConnect: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Tutorial Modal */}
+      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>OAuth Connection Tutorial</DialogTitle>
+          </DialogHeader>
+          <OAuthTutorial />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
