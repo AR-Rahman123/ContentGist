@@ -127,240 +127,172 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Client Manager Sidebar */}
-      <ClientManagerSidebar
-        selectedClientId={selectedClientId}
-        onClientSelect={handleClientSelect}
-        onCreatePostForClient={handleCreatePostForClient}
-      />
+    <div className="min-h-screen bg-white flex">
+      {/* Buffer-style Header */}
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+        <div className="flex items-center justify-between h-16 px-6">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Users className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-semibold text-gray-900">ContentGist</span>
+            </div>
+            
+            <nav className="flex items-center gap-6">
+              <button className="text-blue-600 border-b-2 border-blue-600 pb-4 px-2 font-medium">
+                Publish
+              </button>
+              <button className="text-gray-600 hover:text-gray-900 pb-4 px-2">
+                Analyze
+              </button>
+              <button className="text-gray-600 hover:text-gray-900 pb-4 px-2">
+                Engage
+              </button>
+            </nav>
+          </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between h-16">
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={() => setShowPostScheduler(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New Post
+            </Button>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>Welcome, {user?.name}</span>
+              <Button variant="ghost" size="sm" onClick={logout}>
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Buffer-style Layout */}
+      <div className="flex w-full pt-16">
+        {/* Left Sidebar - Channels */}
+        <div className="w-64 bg-gray-50 border-r border-gray-200 h-screen overflow-y-auto">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-gray-900">Channels</h2>
+              <button className="p-1 hover:bg-gray-200 rounded">
+                <Plus className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            
+            <ClientManagerSidebar
+              selectedClientId={selectedClientId}
+              onClientSelect={handleClientSelect}
+              onCreatePostForClient={handleCreatePostForClient}
+            />
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 bg-white">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Users className="w-4 h-4 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900">All Channels</h1>
                 {selectedClientId && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant="secondary">
                     Client #{selectedClientId} Selected
                   </Badge>
                 )}
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-500">Welcome, {user?.name}</span>
-                <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
-                  Dashboard
+              
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm">
+                  Calendar
                 </Button>
-                <Button variant="outline" size="sm" onClick={logout}>
-                  Logout
+                <Button variant="outline" size="sm">
+                  List
+                </Button>
+                <Button 
+                  onClick={() => setShowPostScheduler(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Post
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Main Dashboard Content */}
-        <div className="flex-1 overflow-auto p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalPosts || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scheduled</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.scheduledPosts || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Posted</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.postedPosts || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Subs</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.activeSubscriptions || 0}</div>
-            </CardContent>
-          </Card>
-        </div>
+            {/* Buffer-style Tabs */}
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="flex gap-8">
+                <button className="pb-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium">
+                  Queue <span className="ml-1 text-sm text-gray-500">1</span>
+                </button>
+                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                  Drafts <span className="ml-1 text-sm text-gray-500">0</span>
+                </button>
+                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                  Approvals <span className="ml-1 text-sm text-gray-500">4</span>
+                </button>
+                <button className="pb-3 px-1 text-gray-600 hover:text-gray-900">
+                  Sent <span className="ml-1 text-sm text-gray-500">99</span>
+                </button>
+              </nav>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Users List */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Users</CardTitle>
-              <CardDescription>Manage your users and their subscriptions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {users?.map((user: any) => (
-                  <div key={user.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{user.name}</h3>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                        <p className="text-xs text-gray-400">
-                          Joined: {formatDate(user.createdAt)}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end space-y-1">
-                        <Badge variant={user.subscriptionStatus === 'active' ? 'default' : 'secondary'}>
-                          {user.subscriptionStatus}
-                        </Badge>
-                        {user.planId && (
-                          <span className="text-xs text-gray-500">Plan ID: {user.planId}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Posts Management */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Posts</CardTitle>
-                <CardDescription>Create and manage posts for users</CardDescription>
-              </div>
-              <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Post
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Create New Post</DialogTitle>
-                    <DialogDescription>
-                      Create a new post and assign it to a user
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="user">Assign to User</Label>
-                      <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users?.map((user: any) => (
-                            <SelectItem key={user.id} value={user.id.toString()}>
-                              {user.name} ({user.email})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="title">Post Title</Label>
-                      <Input
-                        id="title"
-                        value={postData.title}
-                        onChange={(e) => setPostData(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="Enter post title"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="content">Content</Label>
-                      <Textarea
-                        id="content"
-                        value={postData.content}
-                        onChange={(e) => setPostData(prev => ({ ...prev, content: e.target.value }))}
-                        placeholder="Enter post content"
-                        rows={4}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="scheduledAt">Schedule Date (Optional)</Label>
-                      <Input
-                        id="scheduledAt"
-                        type="datetime-local"
-                        value={postData.scheduledAt}
-                        onChange={(e) => setPostData(prev => ({ ...prev, scheduledAt: e.target.value }))}
-                      />
-                    </div>
-                    
-                    <Button 
-                      onClick={handleCreatePost} 
-                      className="w-full"
-                      disabled={createPostMutation.isPending || !selectedUserId || !postData.title || !postData.content}
-                    >
-                      {createPostMutation.isPending ? 'Creating...' : 'Create Post'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {posts?.map((post: any) => (
-                  <div key={post.id} className="border rounded-lg p-3">
+            {/* Posts Content Area */}
+            <div className="space-y-4">
+              {posts && posts.length > 0 ? (
+                posts.map((post: any) => (
+                  <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm">{post.title}</h4>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{post.content}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          User ID: {post.userId}
-                        </p>
-                        {post.scheduledAt && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Scheduled: {formatDate(post.scheduledAt)}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <span className="text-sm text-gray-600">Client #{post.userId}</span>
+                          <Badge className={`${getStatusColor(post.status)} text-xs`}>
+                            {post.status}
+                          </Badge>
+                        </div>
+                        
+                        <h3 className="font-semibold text-gray-900 mb-2">{post.title}</h3>
+                        <p className="text-gray-700 mb-4">{post.content}</p>
+                        
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          {post.scheduledAt && (
+                            <span>Scheduled: {formatDate(post.scheduledAt)}</span>
+                          )}
+                          <span>Platforms: {post.platforms?.join(', ') || 'None'}</span>
+                        </div>
                       </div>
-                      <Badge className={`${getStatusColor(post.status)} text-xs`}>
-                        {post.status}
-                      </Badge>
+                      
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          Publish Now
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                ))
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+                  <p className="text-gray-600 mb-4">Create your first post to get started</p>
+                  <Button 
+                    onClick={() => setShowPostScheduler(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
