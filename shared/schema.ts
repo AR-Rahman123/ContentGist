@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("user"), // "user" or "admin"
   planId: integer("plan_id").references(() => plans.id),
   stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("inactive"), // "active", "inactive", "canceled"
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -51,6 +52,8 @@ export const plans = pgTable("plans", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   postsLimit: integer("posts_limit").notNull(),
   stripePriceId: text("stripe_price_id"),
+  features: text("features").array(), // Array of feature descriptions
+  isPopular: boolean("is_popular").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

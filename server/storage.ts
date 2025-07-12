@@ -1,6 +1,6 @@
 import { users, posts, plans, payments, socialAccounts, analytics, type User, type InsertUser, type Post, type InsertPost, type Plan, type InsertPlan, type Payment, type SocialAccount, type InsertSocialAccount, type Analytics, type InsertAnalytics } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, lte, desc } from "drizzle-orm";
+import { eq, and, lte, gte, desc } from "drizzle-orm";
 import { hashPassword } from "./auth";
 import crypto from "crypto";
 
@@ -10,6 +10,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
 
   // Post methods
@@ -18,6 +19,7 @@ export interface IStorage {
   createPost(post: InsertPost): Promise<Post>;
   updatePost(id: number, updates: Partial<Post>): Promise<Post | undefined>;
   getScheduledPosts(): Promise<Post[]>;
+  getPostsByDateRange(startDate: Date, endDate: Date): Promise<Post[]>;
   getAllPosts(): Promise<Post[]>;
 
   // Plan methods
@@ -129,6 +131,16 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
+  async updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User | undefined> {
+    const updates: Partial<User> = { stripeCustomerId };
+    if (stripeSubscriptionId) {
+      updates.stripeSubscriptionId = stripeSubscriptionId;
+      updates.subscriptionStatus = 'active';
+    }
+    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return user || undefined;
+  }
+
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
   }
@@ -165,6 +177,15 @@ export class DatabaseStorage implements IStorage {
 
   async getAllPosts(): Promise<Post[]> {
     return await db.select().from(posts);
+  }
+
+  async getPostsByDateRange(startDate: Date, endDate: Date): Promise<Post[]> {
+    return await db.select().from(posts)
+      .where(and(
+        gte(posts.scheduledAt, startDate),
+        lte(posts.scheduledAt, endDate)
+      ))
+      .orderBy(posts.scheduledAt);
   }
 
   // Plan methods

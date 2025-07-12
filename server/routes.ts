@@ -97,7 +97,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       name: user.name, 
       role: user.role,
       planId: user.planId,
-      subscriptionStatus: user.subscriptionStatus
+      subscriptionStatus: user.subscriptionStatus,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId
     });
   });
 
@@ -409,6 +411,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error publishing post:', error);
       res.status(500).json({ message: 'Failed to publish post' });
+    }
+  });
+
+  // Calendar API endpoints
+  app.get('/api/calendar/posts', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { start, end } = req.query;
+      
+      if (!start || !end) {
+        return res.status(400).json({ message: 'Start and end dates are required' });
+      }
+      
+      const startDate = new Date(start as string);
+      const endDate = new Date(end as string);
+      
+      let posts;
+      if (req.user!.role === 'admin') {
+        posts = await storage.getPostsByDateRange(startDate, endDate);
+      } else {
+        const allPosts = await storage.getPostsByUser(req.user!.id);
+        posts = allPosts.filter(post => {
+          if (!post.scheduledAt) return false;
+          const scheduledDate = new Date(post.scheduledAt);
+          return scheduledDate >= startDate && scheduledDate <= endDate;
+        });
+      }
+      
+      // Transform posts for calendar format
+      const calendarEvents = posts.map(post => ({
+        id: post.id,
+        title: post.title,
+        start: post.scheduledAt,
+        end: post.scheduledAt,
+        status: post.status,
+        content: post.content,
+        userId: post.userId,
+        platforms: post.platforms,
+        resource: post.status // For grouping by status
+      }));
+      
+      res.json(calendarEvents);
+    } catch (error) {
+      console.error('Error fetching calendar posts:', error);
+      res.status(500).json({ message: 'Failed to fetch calendar posts' });
     }
   });
 
