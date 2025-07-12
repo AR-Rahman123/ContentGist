@@ -218,6 +218,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Admin route to get all clients with their social accounts and post stats
+  app.get('/api/admin/clients-overview', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const allPosts = await storage.getAllPosts();
+      const plans = await storage.getAllPlans();
+      
+      // Filter out admin users
+      const clients = users.filter(user => user.role !== 'admin');
+      
+      // Get detailed info for each client
+      const clientsWithDetails = await Promise.all(
+        clients.map(async (client) => {
+          // Get social accounts for this client
+          const socialAccounts = await storage.getSocialAccountsByUser(client.id);
+          
+          // Get post stats for this client
+          const clientPosts = allPosts.filter(post => post.userId === client.id);
+          const postStats = {
+            total: clientPosts.length,
+            scheduled: clientPosts.filter(p => p.status === 'scheduled').length,
+            posted: clientPosts.filter(p => p.status === 'posted').length,
+            pending: clientPosts.filter(p => p.status === 'pending_approval').length,
+            approved: clientPosts.filter(p => p.status === 'approved').length
+          };
+          
+          // Get plan info
+          const plan = client.planId ? plans.find(p => p.id === client.planId) : null;
+          
+          return {
+            ...client,
+            socialAccounts: socialAccounts.map(account => ({
+              id: account.id,
+              platform: account.platform,
+              accountName: account.accountName,
+              isActive: account.isActive,
+              createdAt: account.createdAt
+            })),
+            postStats,
+            plan: plan ? { name: plan.name, postsLimit: plan.postsLimit } : null
+          };
+        })
+      );
+      
+      res.json(clientsWithDetails);
+    } catch (error) {
+      console.error('Error fetching clients overview:', error);
+      res.status(500).json({ message: 'Failed to fetch clients overview' });
+    }
+  });
+
   // User dashboard stats
   app.get('/api/dashboard/stats', authenticateToken, async (req: AuthRequest, res) => {
     const posts = await storage.getPostsByUser(req.user!.id);

@@ -1,0 +1,65 @@
+Create a full SaaS web application using Node.js with Express and EJS (or React if preferred), plus SQLite or PostgreSQL for database.
+
+Business name: Content Gist.
+
+The app should include:
+
+1️⃣ **Authentication & User Management**
+- Users can sign up and log in with email and password.
+- Admin role (me) can view and manage all clients.
+- Each client can choose a plan (Basic, Pro, Premium) with Stripe integration for payments.
+- Store user plan, payment status, and posting limits.
+
+2️⃣ **Channels (like Buffer)**
+- In dashboard, show different channels (Instagram, Twitter, LinkedIn, Facebook, YouTube).
+- Clients can choose to connect their accounts via OAuth 2.0 (for direct posting), or provide their credentials to me securely (optional).
+- Store channel connection status and tokens.
+
+3️⃣ **Direct posting option**
+- When client connects via OAuth, I can post directly from the website to their social media.
+- Use Meta Graph API for Instagram/Facebook, Twitter API v2, LinkedIn Marketing API, YouTube Data API.
+- Store access tokens securely (encrypted).
+
+4️⃣ **Manual copy option**
+- If client does not connect account, I can create content and share it with them in their dashboard.
+- They can view, copy, and manually post the content.
+- Provide a "Copy" button and download option.
+
+5️⃣ **Admin Scheduling & Calendar**
+- Admin (me) can see a full calendar view (similar to Buffer's interface).
+- I can create posts for each client, assign to a channel, set publish time and date.
+- Use node-cron or similar scheduler to check scheduled posts and publish them automatically if client has connected account.
+- Posts that are sent but not connected should remain in "Pending manual posting" status.
+
+6️⃣ **Dashboard UI**
+- Clients can see upcoming and past posts, separated by channel.
+- Admin can manage all posts and see overview of all clients' calendars.
+- Use modern, clean design with blue and teal accents, rounded buttons, good typography (Inter or Roboto).
+- Responsive for desktop and mobile.
+
+7️⃣ **Payments**
+- Integrate Stripe for plans (Basic, Pro, Premium) with different allowed number of posts per month or per channel.
+- Save payment and subscription data in DB.
+
+8️⃣ **Database structure**
+- Tables: users, posts, channels, plans, payments, scheduled_jobs.
+- Posts: content, scheduled time, channel, status, client ID.
+- Channels: type (Instagram, Twitter, etc.), connection status, tokens.
+
+9️⃣ **Other details**
+- Allow admin to upload images or videos for posts.
+- Option to send email notifications to clients when new content is ready for them to review or copy.
+- Include a README explaining setup and running instructions.
+
+Project name: content-gist.
+
+Generate full working code, including:
+- package.json
+- index.js (or app.js)
+- views (EJS or React)
+- public CSS
+- all database setup scripts
+- Stripe integration logic
+- OAuth logic for social channels
+
+Please structure code so I can copy each file directly into Replit and run immediately.

@@ -9,14 +9,28 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, FileText, Clock, CheckCircle, Plus } from 'lucide-react';
+import { Users, FileText, Clock, CheckCircle, Plus, BarChart3, Settings } from 'lucide-react';
+import ClientManagerSidebar from '@/components/ClientManagerSidebar';
+import PostScheduler from '@/components/PostScheduler';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+  const [selectedClientId, setSelectedClientId] = useState<number | undefined>(undefined);
+  const [showPostScheduler, setShowPostScheduler] = useState(false);
+  const [postForClientId, setPostForClientId] = useState<number | undefined>(undefined);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  
+  const handleClientSelect = (clientId: number) => {
+    setSelectedClientId(clientId);
+  };
+
+  const handleCreatePostForClient = (clientId: number) => {
+    setPostForClientId(clientId);
+    setShowPostScheduler(true);
+  };
   const [selectedUserId, setSelectedUserId] = useState('');
   const [postData, setPostData] = useState({
     title: '',
@@ -84,31 +98,77 @@ export default function AdminDashboard() {
     }
   };
 
+  if (showPostScheduler) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowPostScheduler(false);
+                setPostForClientId(undefined);
+              }}
+              className="mb-4"
+            >
+              ← Back to Admin Dashboard
+            </Button>
+          </div>
+          <PostScheduler 
+            onClose={() => {
+              setShowPostScheduler(false);
+              setPostForClientId(undefined);
+            }}
+            clientId={postForClientId}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-500">Welcome, {user?.name}</span>
-              <Button variant="outline" size="sm" onClick={() => setLocation('/')}>
-                Home
-              </Button>
-              <Button variant="outline" size="sm" onClick={logout}>
-                Logout
-              </Button>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Client Manager Sidebar */}
+      <ClientManagerSidebar
+        selectedClientId={selectedClientId}
+        onClientSelect={handleClientSelect}
+        onCreatePostForClient={handleCreatePostForClient}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                {selectedClientId && (
+                  <Badge variant="secondary" className="ml-2">
+                    Client #{selectedClientId} Selected
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-500">Welcome, {user?.name}</span>
+                <Button variant="outline" size="sm" onClick={() => setLocation('/dashboard')}>
+                  Dashboard
+                </Button>
+                <Button variant="outline" size="sm" onClick={logout}>
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+        {/* Main Dashboard Content */}
+        <div className="flex-1 overflow-auto p-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -300,6 +360,7 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
         </div>
       </div>
     </div>
