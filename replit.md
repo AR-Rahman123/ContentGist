@@ -12,6 +12,7 @@ This is a comprehensive full-stack social media management SaaS platform built w
 ✅ **Post Scheduler**: Automated cron-based content scheduling system
 ✅ **Admin Dashboard**: Comprehensive admin panel for user and content management
 ✅ **Database Schema**: Extended schema for users, posts, plans, and payments
+✅ **Database Integration**: Migrated from in-memory storage to PostgreSQL with Drizzle ORM
 ✅ **UI Components**: Created complete shadcn/ui component library
 ✅ **Routing System**: Implemented wouter-based routing with protected routes
 
@@ -57,7 +58,8 @@ Preferred communication style: Simple, everyday language.
 ### Backend Components
 - **Express Server**: Main application server with middleware
 - **Route Registration**: Centralized route management
-- **Storage Interface**: Abstract storage layer with in-memory implementation
+- **Storage Interface**: Abstract storage layer with PostgreSQL database implementation
+- **Database Connection**: Neon serverless PostgreSQL with connection pooling
 - **Vite Integration**: Development server integration for HMR
 
 ### Shared Components
@@ -76,9 +78,10 @@ Preferred communication style: Simple, everyday language.
 ### Server-Side Data Flow
 1. Express middleware handles request parsing and logging
 2. Routes process API requests and interact with storage layer
-3. Storage interface abstracts database operations
-4. Error handling middleware catches and formats errors
-5. Responses sent back to client with appropriate status codes
+3. DatabaseStorage implements storage interface with PostgreSQL operations
+4. Drizzle ORM handles type-safe database queries and transactions
+5. Error handling middleware catches and formats errors
+6. Responses sent back to client with appropriate status codes
 
 ### Database Flow
 1. Drizzle ORM provides type-safe database queries

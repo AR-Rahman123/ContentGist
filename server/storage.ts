@@ -1,4 +1,7 @@
 import { users, posts, plans, payments, type User, type InsertUser, type Post, type InsertPost, type Plan, type InsertPlan, type Payment } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, lte } from "drizzle-orm";
+import { hashPassword } from "./auth";
 
 export interface IStorage {
   // User methods
@@ -26,29 +29,28 @@ export interface IStorage {
   getPaymentsByUser(userId: number): Promise<Payment[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private posts: Map<number, Post>;
-  private plans: Map<number, Plan>;
-  private payments: Map<number, Payment>;
-  private currentUserId: number;
-  private currentPostId: number;
-  private currentPlanId: number;
-  private currentPaymentId: number;
-
+export class DatabaseStorage implements IStorage {
   constructor() {
-    this.users = new Map();
-    this.posts = new Map();
-    this.plans = new Map();
-    this.payments = new Map();
-    this.currentUserId = 1;
-    this.currentPostId = 1;
-    this.currentPlanId = 1;
-    this.currentPaymentId = 1;
-    
-    // Initialize default plans
-    this.initializePlans();
-    this.createAdminUser();
+    // Initialize default data
+    this.initializeDefaultData();
+  }
+
+  private async initializeDefaultData() {
+    try {
+      // Check if plans exist
+      const existingPlans = await db.select().from(plans);
+      if (existingPlans.length === 0) {
+        await this.initializePlans();
+      }
+
+      // Check if admin user exists
+      const adminUser = await db.select().from(users).where(eq(users.email, "admin@contentgist.com"));
+      if (adminUser.length === 0) {
+        await this.createAdminUser();
+      }
+    } catch (error) {
+      console.log('Database initialization will be handled on first request');
+    }
   }
 
   private async initializePlans() {
@@ -59,135 +61,105 @@ export class MemStorage implements IStorage {
     ];
 
     for (const plan of defaultPlans) {
-      await this.createPlan(plan);
+      await db.insert(plans).values(plan);
     }
   }
 
   private async createAdminUser() {
+    const hashedPassword = await hashPassword("password");
     const admin: InsertUser = {
       email: "admin@contentgist.com",
-      password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // "password"
+      password: hashedPassword,
       name: "Admin User"
     };
     
-    const adminUser = await this.createUser(admin);
-    await this.updateUser(adminUser.id, { role: "admin" });
+    const [adminUser] = await db.insert(users).values(admin).returning();
+    await db.update(users).set({ role: "admin" }).where(eq(users.id, adminUser.id));
   }
 
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id,
-      role: "user",
-      planId: null,
-      stripeCustomerId: null,
-      subscriptionStatus: "inactive",
-      createdAt: new Date()
-    };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db.update(users).set(updates).where(eq(users.id, id)).returning();
+    return user || undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return await db.select().from(users);
   }
 
   // Post methods
   async getPost(id: number): Promise<Post | undefined> {
-    return this.posts.get(id);
+    const [post] = await db.select().from(posts).where(eq(posts.id, id));
+    return post || undefined;
   }
 
   async getPostsByUser(userId: number): Promise<Post[]> {
-    return Array.from(this.posts.values()).filter(post => post.userId === userId);
+    return await db.select().from(posts).where(eq(posts.userId, userId));
   }
 
   async createPost(insertPost: InsertPost): Promise<Post> {
-    const id = this.currentPostId++;
-    const post: Post = {
-      ...insertPost,
-      id,
-      status: "draft",
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.posts.set(id, post);
+    const [post] = await db.insert(posts).values(insertPost).returning();
     return post;
   }
 
   async updatePost(id: number, updates: Partial<Post>): Promise<Post | undefined> {
-    const post = this.posts.get(id);
-    if (!post) return undefined;
-    
-    const updatedPost = { ...post, ...updates, updatedAt: new Date() };
-    this.posts.set(id, updatedPost);
-    return updatedPost;
+    const [post] = await db.update(posts).set({ ...updates, updatedAt: new Date() }).where(eq(posts.id, id)).returning();
+    return post || undefined;
   }
 
   async getScheduledPosts(): Promise<Post[]> {
     const now = new Date();
-    return Array.from(this.posts.values()).filter(
-      post => post.status === "scheduled" && post.scheduledAt && post.scheduledAt <= now
+    return await db.select().from(posts).where(
+      and(
+        eq(posts.status, "scheduled"),
+        lte(posts.scheduledAt, now)
+      )
     );
   }
 
   async getAllPosts(): Promise<Post[]> {
-    return Array.from(this.posts.values());
+    return await db.select().from(posts);
   }
 
   // Plan methods
   async getPlan(id: number): Promise<Plan | undefined> {
-    return this.plans.get(id);
+    const [plan] = await db.select().from(plans).where(eq(plans.id, id));
+    return plan || undefined;
   }
 
   async getAllPlans(): Promise<Plan[]> {
-    return Array.from(this.plans.values());
+    return await db.select().from(plans);
   }
 
   async createPlan(insertPlan: InsertPlan): Promise<Plan> {
-    const id = this.currentPlanId++;
-    const plan: Plan = {
-      ...insertPlan,
-      id,
-      createdAt: new Date()
-    };
-    this.plans.set(id, plan);
+    const [plan] = await db.insert(plans).values(insertPlan).returning();
     return plan;
   }
 
   // Payment methods
   async createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Promise<Payment> {
-    const id = this.currentPaymentId++;
-    const newPayment: Payment = {
-      ...payment,
-      id,
-      createdAt: new Date()
-    };
-    this.payments.set(id, newPayment);
+    const [newPayment] = await db.insert(payments).values(payment).returning();
     return newPayment;
   }
 
   async getPaymentsByUser(userId: number): Promise<Payment[]> {
-    return Array.from(this.payments.values()).filter(payment => payment.userId === userId);
+    return await db.select().from(payments).where(eq(payments.userId, userId));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
