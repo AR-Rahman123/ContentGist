@@ -584,6 +584,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo endpoint for creating mock social accounts
+  app.post('/api/auth/callback/demo', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { platform, accountName } = req.body;
+      const userId = req.user!.id;
+      
+      await storage.createSocialAccount({
+        userId: userId,
+        platform: platform,
+        accountName: accountName || `Demo ${platform} Account`,
+        accessToken: `demo_token_${Date.now()}`,
+        refreshToken: null,
+        expiresAt: null,
+        isActive: true
+      });
+      
+      res.json({ success: true, message: 'Demo account connected successfully' });
+    } catch (error) {
+      console.error('Demo connection error:', error);
+      res.status(500).json({ message: 'Failed to create demo connection' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

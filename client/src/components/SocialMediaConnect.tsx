@@ -88,7 +88,28 @@ const SocialMediaConnect: React.FC = () => {
   };
 
   const handleConnect = (platform: string) => {
-    connectMutation.mutate(platform);
+    // For demo purposes, we'll create a mock connection
+    setConnecting(platform);
+    
+    // Simulate OAuth flow with a delay
+    setTimeout(async () => {
+      try {
+        await apiRequest('/api/auth/callback/demo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            platform: platform,
+            accountName: `Demo ${platform.charAt(0).toUpperCase() + platform.slice(1)} Account`,
+            success: true
+          })
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/social-accounts'] });
+        setConnecting(null);
+      } catch (error) {
+        console.error('Demo connection error:', error);
+        setConnecting(null);
+      }
+    }, 2000);
   };
 
   const handleDisconnect = (accountId: number) => {
@@ -199,15 +220,52 @@ const SocialMediaConnect: React.FC = () => {
       </div>
 
       {socialAccounts && socialAccounts.length > 0 && (
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <h3 className="font-semibold text-blue-900">Connected Successfully!</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Your social media accounts are now connected. Our team can now create and schedule posts 
-                directly to your platforms. You'll receive notifications when posts are scheduled for your approval.
-              </p>
+        <div className="mt-8 space-y-4">
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start gap-3">
+              <Check className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-blue-900">Connected Successfully!</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Your social media accounts are now connected. Our team can now create and schedule posts 
+                  directly to your platforms. You'll receive notifications when posts are scheduled for your approval.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-green-900 mb-2">What happens next?</h4>
+            <div className="space-y-2 text-sm text-green-700">
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>We can now post content automatically to your connected accounts</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>Our scheduler will check for connected accounts before posting</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>Posts will show "Posted" status when published successfully</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>Posts will require manual posting if accounts aren't connected</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-amber-900">Demo Mode Active</h4>
+                <p className="text-sm text-amber-700 mt-1">
+                  These are demo connections for testing. To enable real social media posting, 
+                  you'll need to configure OAuth apps with each platform and provide API credentials.
+                </p>
+              </div>
             </div>
           </div>
         </div>

@@ -22,6 +22,7 @@ import Register from './pages/Register';
 import Pricing from './pages/Pricing';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import OAuthDemoPage from './pages/OAuthDemo';
 
 // Landing Page Component
 const LandingPage = () => {
@@ -89,6 +90,7 @@ function AppContent() {
             <AdminDashboard />
           </ProtectedRoute>
         </Route>
+        <Route path="/oauth-demo" component={OAuthDemoPage} />
         <Route>
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">

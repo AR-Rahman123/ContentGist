@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Calendar, CreditCard } from 'lucide-react';
+import { Users, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Calendar, CreditCard, Shield } from 'lucide-react';
 import ClientManagerSidebar from '@/components/ClientManagerSidebar';
 import PostScheduler from '@/components/PostScheduler';
 import CalendarView from '@/components/CalendarView';
 import PricingPlans from '@/components/PricingPlans';
 import PostCreatorModal from '@/components/PostCreatorModal';
 import PostList from '@/components/PostList';
+import SocialMediaConnect from '@/components/SocialMediaConnect';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 
@@ -363,10 +364,22 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'engage' && (
-              <div className="text-center py-12">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Engagement Hub</h3>
-                <p className="text-gray-600">Manage interactions and responses across all platforms</p>
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2">Social Media Connections</h2>
+                    <p className="text-sm text-gray-600">Manage client social media account connections for automated posting</p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open('/oauth-demo', '_blank')}
+                    className="flex items-center gap-2"
+                  >
+                    <Shield className="w-4 h-4" />
+                    How OAuth Works
+                  </Button>
+                </div>
+                <SocialMediaConnect />
               </div>
             )}
 
