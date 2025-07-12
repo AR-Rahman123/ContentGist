@@ -18,6 +18,7 @@ export interface IStorage {
   getPostsByUser(userId: number): Promise<Post[]>;
   createPost(post: InsertPost): Promise<Post>;
   updatePost(id: number, updates: Partial<Post>): Promise<Post | undefined>;
+  deletePost(id: number): Promise<boolean>;
   getScheduledPosts(): Promise<Post[]>;
   getPostsByDateRange(startDate: Date, endDate: Date): Promise<Post[]>;
   getAllPosts(): Promise<Post[]>;
@@ -163,6 +164,11 @@ export class DatabaseStorage implements IStorage {
   async updatePost(id: number, updates: Partial<Post>): Promise<Post | undefined> {
     const [post] = await db.update(posts).set({ ...updates, updatedAt: new Date() }).where(eq(posts.id, id)).returning();
     return post || undefined;
+  }
+
+  async deletePost(id: number): Promise<boolean> {
+    const result = await db.delete(posts).where(eq(posts.id, id));
+    return result.rowCount > 0;
   }
 
   async getScheduledPosts(): Promise<Post[]> {

@@ -14,6 +14,8 @@ import ClientManagerSidebar from '@/components/ClientManagerSidebar';
 import PostScheduler from '@/components/PostScheduler';
 import CalendarView from '@/components/CalendarView';
 import PricingPlans from '@/components/PricingPlans';
+import PostCreatorModal from '@/components/PostCreatorModal';
+import PostList from '@/components/PostList';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
 
@@ -24,6 +26,8 @@ export default function AdminDashboard() {
   const [showPostScheduler, setShowPostScheduler] = useState(false);
   const [postForClientId, setPostForClientId] = useState<number | undefined>(undefined);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [showPostCreator, setShowPostCreator] = useState(false);
+  const [initialScheduleDate, setInitialScheduleDate] = useState<string>('');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<'publish' | 'analyze' | 'engage' | 'calendar' | 'billing'>('publish');
   
@@ -298,7 +302,10 @@ export default function AdminDashboard() {
                   Calendar
                 </Button>
                 <Button 
-                  onClick={() => setShowPostScheduler(true)}
+                  onClick={() => {
+                    setInitialScheduleDate('');
+                    setShowPostCreator(true);
+                  }}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -329,69 +336,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Posts Content Area */}
-                <div className="space-y-4">
-                  {posts && posts.length > 0 ? (
-                    posts.map((post: any) => (
-                      <div key={post.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Users className="w-4 h-4 text-blue-600" />
-                              </div>
-                              <span className="text-sm text-gray-600">Client #{post.userId}</span>
-                              <Badge className={`${getStatusColor(post.status)} text-xs`}>
-                                {post.status}
-                              </Badge>
-                            </div>
-                            
-                            <h3 className="font-semibold text-gray-900 mb-2">{post.title}</h3>
-                            <p className="text-gray-700 mb-4">{post.content}</p>
-                            
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              {post.scheduledAt && (
-                                <span>Scheduled: {formatDate(post.scheduledAt)}</span>
-                              )}
-                              <span>Platforms: {post.platforms?.join(', ') || 'None'}</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 ml-4">
-                            <Button variant="outline" size="sm">
-                              Retry Now
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              <Settings className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12">
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-md mx-auto">
-                        <div className="flex items-center justify-center w-12 h-12 bg-yellow-100 rounded-lg mx-auto mb-4">
-                          <Clock className="w-6 h-6 text-yellow-600" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">Not Published</h3>
-                        <p className="text-gray-600 mb-4">
-                          Uhoh, it looks like this post is stuck processing. Retrying the post should work. If you still can run into troubles, get in touch!
-                        </p>
-                        <div className="flex items-center gap-3 justify-center">
-                          <Button 
-                            onClick={() => setShowPostScheduler(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            Retry Now
-                          </Button>
-                          <Button variant="outline">
-                            Get in Touch
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <PostList selectedClientId={selectedClientId} />
               </>
             )}
 
@@ -401,9 +346,9 @@ export default function AdminDashboard() {
                   if (date) {
                     // Set the scheduled date when creating from calendar
                     const isoDate = date.toISOString().slice(0, 16);
-                    setPostData(prev => ({ ...prev, scheduledAt: isoDate }));
+                    setInitialScheduleDate(isoDate);
                   }
-                  setShowPostScheduler(true);
+                  setShowPostCreator(true);
                 }}
                 selectedClientId={selectedClientId}
               />
@@ -431,6 +376,19 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      {showPostCreator && (
+        <PostCreatorModal
+          isOpen={showPostCreator}
+          onClose={() => {
+            setShowPostCreator(false);
+            setInitialScheduleDate('');
+          }}
+          selectedClientId={selectedClientId}
+          initialDate={initialScheduleDate}
+        />
+      )}
     </div>
   );
 }

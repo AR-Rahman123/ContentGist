@@ -192,6 +192,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/posts/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+
+      // Only allow deletion of non-posted content
+      if (post.status === 'posted') {
+        return res.status(400).json({ message: 'Cannot delete published posts' });
+      }
+
+      await storage.deletePost(postId);
+      res.json({ message: 'Post deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      res.status(500).json({ message: 'Failed to delete post' });
+    }
+  });
+
+  app.post('/api/posts/:id/publish', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const post = await storage.getPost(postId);
+      
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found' });
+      }
+
+      // Try to publish manually
+      const socialAccounts = await storage.getSocialAccountsByUser(post.userId);
+      const connectedPlatforms = socialAccounts
+        .filter(account => account.isActive)
+        .map(account => account.platform.toLowerCase());
+      
+      const requestedPlatforms = (post.platforms || []).map(p => p.toLowerCase());
+      const availablePlatforms = requestedPlatforms.filter(platform => 
+        connectedPlatforms.includes(platform)
+      );
+
+      if (availablePlatforms.length === 0) {
+        return res.status(400).json({ message: 'No connected social accounts for this post\'s platforms' });
+      }
+
+      // Import socialMediaService
+      const { socialMediaService } = await import('./socialMediaService');
+      
+      const publishResults = await socialMediaService.publishPost(
+        post.userId,
+        {
+          content: post.content,
+          mediaUrls: post.mediaUrls || [],
+          hashtags: post.hashtags || [],
+          scheduledAt: post.scheduledAt
+        },
+        availablePlatforms
+      );
+      
+      const allSuccessful = publishResults.every(result => result.success);
+      const updatedPost = await storage.updatePost(postId, {
+        status: allSuccessful ? 'posted' : 'failed',
+        publishedAt: new Date(),
+        publishResults: JSON.stringify(publishResults)
+      });
+
+      res.json({ message: 'Post published successfully', post: updatedPost, results: publishResults });
+    } catch (error) {
+      console.error('Error publishing post:', error);
+      res.status(500).json({ message: 'Failed to publish post' });
+    }
+  });
+
   // Admin routes
   app.get('/api/admin/users', authenticateToken, requireAdmin, async (req: AuthRequest, res) => {
     const users = await storage.getAllUsers();
