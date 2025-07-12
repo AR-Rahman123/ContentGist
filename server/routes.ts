@@ -532,6 +532,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // OAuth routes for social media connections
+  app.get('/api/auth/connect/:platform', authenticateToken, async (req: AuthRequest, res) => {
+    const platform = req.params.platform;
+    const userId = req.user!.id;
+    
+    // Create OAuth URLs (these would need actual app credentials)
+    const oauthUrls = {
+      facebook: `https://www.facebook.com/v18.0/dialog/oauth?client_id=YOUR_FACEBOOK_APP_ID&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/callback/facebook`)}&scope=pages_manage_posts,pages_read_engagement&response_type=code&state=${userId}`,
+      instagram: `https://api.instagram.com/oauth/authorize?client_id=YOUR_INSTAGRAM_CLIENT_ID&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/callback/instagram`)}&scope=user_profile,user_media&response_type=code&state=${userId}`,
+      twitter: `https://twitter.com/i/oauth2/authorize?response_type=code&client_id=YOUR_TWITTER_CLIENT_ID&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/callback/twitter`)}&scope=tweet.read%20tweet.write%20users.read&state=${userId}`,
+      linkedin: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_LINKEDIN_CLIENT_ID&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/callback/linkedin`)}&scope=w_member_social&state=${userId}`,
+      youtube: `https://accounts.google.com/o/oauth2/auth?client_id=YOUR_GOOGLE_CLIENT_ID&redirect_uri=${encodeURIComponent(`${req.protocol}://${req.get('host')}/api/auth/callback/youtube`)}&scope=https://www.googleapis.com/auth/youtube.upload&response_type=code&access_type=offline&state=${userId}`
+    };
+    
+    const oauthUrl = oauthUrls[platform as keyof typeof oauthUrls];
+    if (!oauthUrl) {
+      return res.status(400).json({ message: 'Unsupported platform' });
+    }
+    
+    res.redirect(oauthUrl);
+  });
+
+  // OAuth callback handlers (for demonstration)
+  app.get('/api/auth/callback/:platform', async (req, res) => {
+    const platform = req.params.platform;
+    const { code, error, state } = req.query;
+    const userId = parseInt(state as string);
+    
+    if (error || !code || !userId) {
+      return res.redirect(`/?error=oauth_failed&platform=${platform}`);
+    }
+    
+    try {
+      // For demonstration, create a mock connected account
+      // In production, you'd exchange the code for access tokens here
+      await storage.createSocialAccount({
+        userId: userId,
+        platform: platform,
+        accountName: `Demo ${platform.charAt(0).toUpperCase() + platform.slice(1)} Account`,
+        accessToken: `demo_token_${Date.now()}`,
+        refreshToken: null,
+        expiresAt: null,
+        isActive: true
+      });
+      
+      res.redirect(`/?success=connected&platform=${platform}`);
+    } catch (error) {
+      console.error(`OAuth error for ${platform}:`, error);
+      res.redirect(`/?error=connection_failed&platform=${platform}`);
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
