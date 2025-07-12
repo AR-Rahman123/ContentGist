@@ -1,7 +1,8 @@
-import { users, posts, plans, payments, type User, type InsertUser, type Post, type InsertPost, type Plan, type InsertPlan, type Payment } from "@shared/schema";
+import { users, posts, plans, payments, socialAccounts, analytics, type User, type InsertUser, type Post, type InsertPost, type Plan, type InsertPlan, type Payment, type SocialAccount, type InsertSocialAccount, type Analytics, type InsertAnalytics } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, lte } from "drizzle-orm";
+import { eq, and, lte, desc } from "drizzle-orm";
 import { hashPassword } from "./auth";
+import crypto from "crypto";
 
 export interface IStorage {
   // User methods
@@ -27,12 +28,42 @@ export interface IStorage {
   // Payment methods
   createPayment(payment: Omit<Payment, 'id' | 'createdAt'>): Promise<Payment>;
   getPaymentsByUser(userId: number): Promise<Payment[]>;
+  
+  // Social Account methods
+  getSocialAccountsByUser(userId: number): Promise<SocialAccount[]>;
+  createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount>;
+  updateSocialAccount(id: number, updates: Partial<SocialAccount>): Promise<SocialAccount | undefined>;
+  deleteSocialAccount(id: number): Promise<boolean>;
+  
+  // Analytics methods
+  getAnalyticsByUser(userId: number): Promise<Analytics[]>;
+  createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
+  getLatestAnalytics(userId: number): Promise<Analytics[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  private readonly encryptionKey: string;
+
   constructor() {
+    // Initialize encryption key for social media tokens
+    this.encryptionKey = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+    
     // Initialize default data
     this.initializeDefaultData();
+  }
+
+  private encryptToken(token: string): string {
+    const cipher = crypto.createCipher('aes-256-cbc', this.encryptionKey);
+    let encrypted = cipher.update(token, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+  }
+
+  private decryptToken(encryptedToken: string): string {
+    const decipher = crypto.createDecipher('aes-256-cbc', this.encryptionKey);
+    let decrypted = decipher.update(encryptedToken, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
   }
 
   private async initializeDefaultData() {
@@ -159,6 +190,81 @@ export class DatabaseStorage implements IStorage {
 
   async getPaymentsByUser(userId: number): Promise<Payment[]> {
     return await db.select().from(payments).where(eq(payments.userId, userId));
+  }
+
+  // Social Account methods
+  async getSocialAccountsByUser(userId: number): Promise<SocialAccount[]> {
+    const accounts = await db.select().from(socialAccounts).where(eq(socialAccounts.userId, userId));
+    // Return accounts with decrypted tokens for internal use
+    return accounts.map(account => ({
+      ...account,
+      accessToken: this.decryptToken(account.accessToken),
+      refreshToken: account.refreshToken ? this.decryptToken(account.refreshToken) : null
+    }));
+  }
+
+  async createSocialAccount(account: InsertSocialAccount): Promise<SocialAccount> {
+    const encryptedAccount = {
+      ...account,
+      accessToken: this.encryptToken(account.accessToken),
+      refreshToken: account.refreshToken ? this.encryptToken(account.refreshToken) : null
+    };
+    
+    const [newAccount] = await db.insert(socialAccounts).values(encryptedAccount).returning();
+    return {
+      ...newAccount,
+      accessToken: account.accessToken, // Return original unencrypted token
+      refreshToken: account.refreshToken || null
+    };
+  }
+
+  async updateSocialAccount(id: number, updates: Partial<SocialAccount>): Promise<SocialAccount | undefined> {
+    const updateData = { ...updates };
+    
+    // Encrypt tokens if they're being updated
+    if (updateData.accessToken) {
+      updateData.accessToken = this.encryptToken(updateData.accessToken);
+    }
+    if (updateData.refreshToken) {
+      updateData.refreshToken = this.encryptToken(updateData.refreshToken);
+    }
+    
+    const [updatedAccount] = await db.update(socialAccounts)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(socialAccounts.id, id))
+      .returning();
+    
+    if (!updatedAccount) return undefined;
+    
+    return {
+      ...updatedAccount,
+      accessToken: updates.accessToken || this.decryptToken(updatedAccount.accessToken),
+      refreshToken: updatedAccount.refreshToken ? this.decryptToken(updatedAccount.refreshToken) : null
+    };
+  }
+
+  async deleteSocialAccount(id: number): Promise<boolean> {
+    const result = await db.delete(socialAccounts).where(eq(socialAccounts.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Analytics methods
+  async getAnalyticsByUser(userId: number): Promise<Analytics[]> {
+    return await db.select().from(analytics)
+      .where(eq(analytics.userId, userId))
+      .orderBy(desc(analytics.date));
+  }
+
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    const [newAnalytics] = await db.insert(analytics).values(analyticsData).returning();
+    return newAnalytics;
+  }
+
+  async getLatestAnalytics(userId: number): Promise<Analytics[]> {
+    return await db.select().from(analytics)
+      .where(eq(analytics.userId, userId))
+      .orderBy(desc(analytics.date))
+      .limit(30); // Last 30 analytics records
   }
 }
 

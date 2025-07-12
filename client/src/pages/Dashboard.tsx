@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Users } from 'lucide-react';
+import { Calendar, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Users, Link as LinkIcon, ThumbsUp, ThumbsDown, MessageSquare, Edit } from 'lucide-react';
 import { useLocation } from 'wouter';
 import PostScheduler from '@/components/PostScheduler';
+import SocialMediaConnect from '@/components/SocialMediaConnect';
+import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [showPostScheduler, setShowPostScheduler] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/dashboard/stats'],
@@ -21,10 +25,25 @@ export default function Dashboard() {
     queryKey: ['/api/posts'],
   });
 
+  const approvePostMutation = useMutation({
+    mutationFn: async ({ postId, status, rejectionReason }: { postId: number, status: string, rejectionReason?: string }) => {
+      return await apiRequest(`/api/posts/${postId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, rejectionReason }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/posts'] });
+    },
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'posted': return 'bg-green-100 text-green-800';
       case 'scheduled': return 'bg-blue-100 text-blue-800';
+      case 'approved': return 'bg-emerald-100 text-emerald-800';
+      case 'pending_approval': return 'bg-yellow-100 text-yellow-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
       case 'draft': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -34,10 +53,28 @@ export default function Dashboard() {
     switch (status) {
       case 'posted': return <CheckCircle className="h-4 w-4" />;
       case 'scheduled': return <Clock className="h-4 w-4" />;
+      case 'approved': return <ThumbsUp className="h-4 w-4" />;
+      case 'pending_approval': return <MessageSquare className="h-4 w-4" />;
+      case 'rejected': return <ThumbsDown className="h-4 w-4" />;
       case 'draft': return <FileText className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
     }
   };
+
+  const handleApprovePost = (postId: number) => {
+    approvePostMutation.mutate({ postId, status: 'approved' });
+  };
+
+  const handleRejectPost = (postId: number, rejectionReason: string) => {
+    approvePostMutation.mutate({ postId, status: 'rejected', rejectionReason });
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'posts', label: 'Posts', icon: FileText },
+    { id: 'social', label: 'Social Accounts', icon: LinkIcon },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  ];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -179,70 +216,171 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Subscription Status */}
-        {!stats?.plan && (
-          <Card className="mb-8 border-orange-200 bg-gradient-to-r from-orange-50 to-red-50 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-orange-800 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                No Active Subscription
-              </CardTitle>
-              <CardDescription className="text-orange-700">
-                You need an active subscription to receive scheduled posts.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => setLocation('/pricing')} className="bg-orange-600 hover:bg-orange-700">
-                Choose a Plan
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Tab Navigation */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="flex space-x-8">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`py-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${
+                        activeTab === tab.id
+                          ? 'border-blue-500 text-blue-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
 
-        {/* Posts List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Posts</CardTitle>
-            <CardDescription>
-              Posts scheduled for your account by the ContentGist team
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {postsLoading ? (
-              <div className="text-center py-8">Loading posts...</div>
-            ) : posts?.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No posts yet. Your scheduled posts will appear here.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {posts?.map((post: any) => (
-                  <div key={post.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{post.title}</h3>
-                        <p className="text-gray-600 mt-1">{post.content}</p>
-                        {post.scheduledAt && (
-                          <p className="text-sm text-gray-500 mt-2">
-                            Scheduled for: {formatDate(post.scheduledAt)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="ml-4 flex items-center space-x-2">
-                        <Badge className={getStatusColor(post.status)}>
-                          <div className="flex items-center space-x-1">
-                            {getStatusIcon(post.status)}
-                            <span className="capitalize">{post.status}</span>
-                          </div>
-                        </Badge>
-                      </div>
-                    </div>
+            {/* Tab Content */}
+            <div className="mt-6">
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  {/* Subscription Status */}
+                  {!stats?.plan && (
+                    <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-red-50">
+                      <CardHeader>
+                        <CardTitle className="text-orange-800 flex items-center gap-2">
+                          <Settings className="w-5 h-5" />
+                          No Active Subscription
+                        </CardTitle>
+                        <CardDescription className="text-orange-700">
+                          You need an active subscription to receive scheduled posts.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Button onClick={() => setLocation('/pricing')} className="bg-orange-600 hover:bg-orange-700">
+                          Choose a Plan
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="text-center">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold text-blue-600">{stats?.totalPosts || 0}</div>
+                        <div className="text-sm text-gray-600">Total Posts</div>
+                      </CardContent>
+                    </Card>
+                    <Card className="text-center">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold text-green-600">{stats?.scheduledPosts || 0}</div>
+                        <div className="text-sm text-gray-600">Scheduled</div>
+                      </CardContent>
+                    </Card>
+                    <Card className="text-center">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold text-purple-600">{stats?.postedPosts || 0}</div>
+                        <div className="text-sm text-gray-600">Posted</div>
+                      </CardContent>
+                    </Card>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
+              )}
+
+              {activeTab === 'posts' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Your Posts</h3>
+                    <p className="text-sm text-gray-600">Posts scheduled for your account by the ContentGist team</p>
+                  </div>
+                  
+                  {postsLoading ? (
+                    <div className="text-center py-8">Loading posts...</div>
+                  ) : posts?.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      No posts yet. Your scheduled posts will appear here.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {posts?.map((post: any) => (
+                        <Card key={post.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-lg">{post.title}</h3>
+                                <p className="text-gray-600 mt-1">{post.content}</p>
+                                {post.scheduledAt && (
+                                  <p className="text-sm text-gray-500 mt-2">
+                                    Scheduled for: {formatDate(post.scheduledAt)}
+                                  </p>
+                                )}
+                                {post.platforms && (
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {post.platforms.map((platform: string) => (
+                                      <Badge key={platform} variant="secondary" className="text-xs">
+                                        {platform}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="ml-4 flex flex-col items-end space-y-2">
+                                <Badge className={getStatusColor(post.status)}>
+                                  <div className="flex items-center space-x-1">
+                                    {getStatusIcon(post.status)}
+                                    <span className="capitalize">{post.status.replace('_', ' ')}</span>
+                                  </div>
+                                </Badge>
+                                
+                                {post.status === 'pending_approval' && (
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => handleApprovePost(post.id)}
+                                      disabled={approvePostMutation.isPending}
+                                      className="bg-green-600 hover:bg-green-700"
+                                    >
+                                      <ThumbsUp className="h-3 w-3 mr-1" />
+                                      Approve
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => handleRejectPost(post.id, 'Client rejected')}
+                                      disabled={approvePostMutation.isPending}
+                                      className="border-red-200 text-red-600 hover:bg-red-50"
+                                    >
+                                      <ThumbsDown className="h-3 w-3 mr-1" />
+                                      Reject
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'social' && (
+                <div>
+                  <SocialMediaConnect />
+                </div>
+              )}
+
+              {activeTab === 'analytics' && (
+                <div>
+                  <AnalyticsDashboard />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

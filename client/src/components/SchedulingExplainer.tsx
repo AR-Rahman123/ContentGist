@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Target, BarChart3, Zap, Users, ArrowRight, Play, Pause, Settings, Edit3 } from 'lucide-react';
+import { Calendar, Clock, Target, BarChart3, Zap, Users, ArrowRight, Play, Pause, Settings, Edit3, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 const SchedulingExplainer = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -7,8 +7,8 @@ const SchedulingExplainer = () => {
 
   const steps = [
     {
-      title: "Create Your Content",
-      description: "Write engaging posts, add images, and craft the perfect message for your audience.",
+      title: "Expert Content Creation",
+      description: "Our team creates engaging posts, adds professional visuals, and crafts the perfect message for your audience.",
       icon: Edit3,
       demo: (
         <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
@@ -17,8 +17,8 @@ const SchedulingExplainer = () => {
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-gray-900">ContentGist</div>
-              <div className="text-sm text-gray-500">Draft post</div>
+              <div className="font-semibold text-gray-900">ContentGist Team</div>
+              <div className="text-sm text-gray-500">Creating your content</div>
             </div>
           </div>
           <div className="space-y-3">
@@ -38,21 +38,28 @@ const SchedulingExplainer = () => {
       )
     },
     {
-      title: "Schedule Smart",
-      description: "Choose the perfect time when your audience is most active, or let our AI optimize for you.",
-      icon: Calendar,
+      title: "Review & Approval",
+      description: "You receive posts for review and approval before they go live. Edit or approve each post directly from your dashboard.",
+      icon: MessageSquare,
       demo: (
         <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
           <div className="mb-4">
-            <div className="font-semibold text-gray-900 mb-2">Schedule Options</div>
-            <div className="grid grid-cols-2 gap-3">
-              <button className="p-3 border-2 border-blue-500 bg-blue-50 rounded-lg text-sm text-blue-700 font-medium">
-                <Clock className="w-4 h-4 mx-auto mb-1" />
-                Optimal Time
+            <div className="font-semibold text-gray-900 mb-2">Post Review</div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm font-medium text-yellow-800">Pending Approval</span>
+              </div>
+              <div className="text-sm text-gray-700">Check out our latest feature...</div>
+            </div>
+            <div className="flex gap-2">
+              <button className="flex-1 p-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 font-medium">
+                <ThumbsUp className="w-4 h-4 mx-auto mb-1" />
+                Approve
               </button>
-              <button className="p-3 border border-gray-200 rounded-lg text-sm text-gray-600">
-                <Calendar className="w-4 h-4 mx-auto mb-1" />
-                Custom Time
+              <button className="flex-1 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 font-medium">
+                <ThumbsDown className="w-4 h-4 mx-auto mb-1" />
+                Request Changes
               </button>
             </div>
           </div>
