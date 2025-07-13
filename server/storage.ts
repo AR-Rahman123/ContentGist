@@ -8,9 +8,15 @@ export interface IStorage {
   // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
   updateUserStripeInfo(id: number, stripeCustomerId: string, stripeSubscriptionId?: string): Promise<User | undefined>;
+  verifyUserEmail(id: number): Promise<void>;
+  updateVerificationToken(id: number, token: string, expires: Date): Promise<void>;
+  updatePasswordResetToken(id: number, token: string, expires: Date): Promise<void>;
+  updatePassword(id: number, hashedPassword: string): Promise<void>;
   getAllUsers(): Promise<User[]>;
 
   // Post methods
@@ -144,6 +150,54 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.emailVerificationToken, token));
+    return user || undefined;
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.passwordResetToken, token));
+    return user || undefined;
+  }
+
+  async verifyUserEmail(id: number): Promise<void> {
+    await db.update(users)
+      .set({ 
+        emailVerified: true, 
+        emailVerificationToken: null, 
+        emailVerificationExpires: null 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async updateVerificationToken(id: number, token: string, expires: Date): Promise<void> {
+    await db.update(users)
+      .set({ 
+        emailVerificationToken: token, 
+        emailVerificationExpires: expires 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async updatePasswordResetToken(id: number, token: string, expires: Date): Promise<void> {
+    await db.update(users)
+      .set({ 
+        passwordResetToken: token, 
+        passwordResetExpires: expires 
+      })
+      .where(eq(users.id, id));
+  }
+
+  async updatePassword(id: number, hashedPassword: string): Promise<void> {
+    await db.update(users)
+      .set({ 
+        password: hashedPassword, 
+        passwordResetToken: null, 
+        passwordResetExpires: null 
+      })
+      .where(eq(users.id, id));
   }
 
   // Post methods

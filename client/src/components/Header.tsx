@@ -10,7 +10,7 @@ const Header = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const [location] = useLocation();
 
-  const navItems = [
+  const homeNavItems = [
     { id: 'home', label: 'Home' },
     { id: 'services', label: 'Services' },
     { id: 'why-choose-us', label: 'About' },
@@ -19,15 +19,22 @@ const Header = () => {
     { id: 'contact', label: 'Contact' }
   ];
 
+  const pageNavItems = [
+    { href: '/', label: 'Home' },
+    { href: '/about', label: 'About' },
+    { href: '/pricing', label: 'Pricing' },
+    { href: '/contact', label: 'Contact' }
+  ];
+
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navItems.map(item => document.getElementById(item.id));
+      const sections = homeNavItems.map(item => document.getElementById(item.id));
       const scrollPosition = window.scrollY + 100;
 
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = sections[i];
         if (section && section.offsetTop <= scrollPosition) {
-          setActiveSection(navItems[i].id);
+          setActiveSection(homeNavItems[i].id);
           break;
         }
       }
@@ -49,18 +56,17 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800/50">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
-          <div 
-            className="text-2xl font-bold text-white cursor-pointer"
-            onClick={() => scrollToSection('home')}
-          >
-            ContentGist
-          </div>
+          <Link href="/">
+            <a className="text-2xl font-bold text-white hover:text-blue-400 transition-colors duration-300">
+              ContentGist
+            </a>
+          </Link>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {location === '/' && (
+            {location === '/' ? (
               <nav className="flex space-x-8">
-                {navItems.map((item) => (
+                {homeNavItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => scrollToSection(item.id)}
@@ -70,6 +76,18 @@ const Header = () => {
                   >
                     {item.label}
                   </button>
+                ))}
+              </nav>
+            ) : (
+              <nav className="flex space-x-8">
+                {pageNavItems.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    <a className={`text-sm font-medium transition-colors duration-300 hover:text-blue-400 ${
+                      location === item.href ? 'text-blue-400' : 'text-slate-300'
+                    }`}>
+                      {item.label}
+                    </a>
+                  </Link>
                 ))}
               </nav>
             )}

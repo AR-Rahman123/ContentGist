@@ -1,181 +1,311 @@
-# ContentGist - Social Media Management SaaS Platform
+# ContentGist - Social Media Management Platform
 
-A full-stack social media management platform built with React, Express, and TypeScript. Features a modern landing page with SaaS functionality including user authentication, subscription management, post scheduling, and admin dashboard.
+<div align="center">
+  <h3>🚀 Elevate Your Social Media Presence</h3>
+  <p>A modern, full-stack social media management platform that simplifies content creation, scheduling, and analytics across all major social platforms.</p>
+  
+  <p>
+    <a href="https://contentgist.com">🌐 Live Demo</a> •
+    <a href="#quick-start">⚡ Quick Start</a> •
+    <a href="SETUP.md">📚 Setup Guide</a> •
+    <a href="#features">✨ Features</a>
+  </p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/React-18-blue?logo=react" alt="React 18" />
+    <img src="https://img.shields.io/badge/TypeScript-5-blue?logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Node.js-18+-green?logo=node.js" alt="Node.js" />
+    <img src="https://img.shields.io/badge/PostgreSQL-14+-blue?logo=postgresql" alt="PostgreSQL" />
+    <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
+  </p>
+</div>
 
-## 🚀 Features
+## ✨ Features
 
-### Landing Page
-- Modern, responsive design with smooth animations
-- Hero section with dynamic CTAs based on authentication state  
-- Services showcase and portfolio display
-- Customer testimonials and contact forms
-- Email integration via EmailJS
+### 🎯 Core Functionality
+- **Multi-Platform Management** - Connect and manage Facebook, Instagram, Twitter, LinkedIn, and YouTube accounts
+- **Smart Scheduling** - Schedule posts across all platforms with optimal timing suggestions
+- **Content Creation** - Built-in tools for creating engaging social media content
+- **Analytics Dashboard** - Comprehensive insights into post performance and audience engagement
+- **Team Collaboration** - Invite team members with role-based permissions
 
-### SaaS Platform
-- **User Authentication**: Secure registration and login system
-- **Subscription Management**: Stripe integration with multiple pricing tiers
-- **Post Scheduling**: Automated content scheduling with cron jobs
-- **User Dashboard**: Track posts, view analytics, and manage account
-- **Admin Dashboard**: Manage users, create posts, and view platform stats
-- **Real-time Updates**: Live status updates for scheduled posts
+### 🔐 Security & Authentication
+- **Email Verification** - Secure account creation with email confirmation required before login
+- **Password Reset** - Complete password recovery flow with secure token-based reset
+- **JWT Authentication** - Secure token-based authentication with refresh capabilities
+- **OAuth Integration** - Login with Google, Facebook, and other social providers
+- **Role-Based Access** - Admin and user roles with appropriate permissions and route protection
 
-### Plans Available
-- **Basic Plan**: $9.99/month - 10 posts per month
-- **Pro Plan**: $29.99/month - 50 posts per month  
-- **Premium Plan**: $99.99/month - 200 posts per month
+### 💳 Business Features
+- **Subscription Management** - Flexible pricing plans with Stripe integration
+- **Payment Processing** - Secure payment handling and automated billing
+- **Usage Analytics** - Track plan usage and feature utilization
+- **API Rate Limiting** - Intelligent rate limiting for external API calls
+
+### 🎨 User Experience
+- **Modern UI** - Beautiful, responsive design with Tailwind CSS and shadcn/ui
+- **Full Page Navigation** - Dedicated About, Privacy Policy, and Terms of Service pages
+- **Mobile Responsive** - Perfect experience on desktop, tablet, and mobile
+- **Real-time Updates** - Live notifications and status updates
+- **Intuitive Forms** - Enhanced error handling and loading states throughout
+
+### 📧 Communication
+- **Transactional Emails** - Beautiful HTML email templates for verification and password reset
+- **Email Service Integration** - Full nodemailer setup with SMTP configuration
+- **Multi-Provider Support** - Works with Gmail, SendGrid, Mailgun, and other providers
 
 ## 🛠 Tech Stack
 
 ### Frontend
-- **React 18** with TypeScript
-- **Tailwind CSS** + **shadcn/ui** components
-- **Wouter** for routing
-- **TanStack Query** for server state management
-- **EmailJS** for client-side email functionality
+- **React 18** with TypeScript for type-safe development
+- **Vite** for lightning-fast development and optimized builds
+- **Tailwind CSS** for utility-first styling
+- **shadcn/ui** for beautiful, accessible components
+- **TanStack Query** for efficient data fetching and caching
+- **Wouter** for lightweight client-side routing
+- **Framer Motion** for smooth animations
 
-### Backend  
-- **Express.js** with TypeScript
-- **JWT** authentication with bcrypt password hashing
+### Backend
+- **Node.js** with Express.js for robust API development
+- **TypeScript** for type safety across the entire stack
+- **Drizzle ORM** for type-safe database operations
+- **PostgreSQL** for reliable data storage with full schema
+- **Passport.js** for authentication strategies
+- **JWT** for secure session management
+- **Nodemailer** for transactional emails
 - **Stripe** for payment processing
-- **Node-cron** for automated post scheduling
-- **In-memory storage** (easily replaceable with PostgreSQL)
 
-### Development
-- **Vite** for fast development and building
-- **TypeScript** with strict configuration
-- **ESLint** and **Prettier** for code quality
+### Infrastructure
+- **Neon** for serverless PostgreSQL hosting
+- **Vercel** ready for frontend deployment
+- **Railway** ready for backend deployment
+- **Environment-based configuration** for all services
 
-## 🏃‍♂️ Getting Started
+## ⚡ Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. Clone the repository
 ```bash
-git clone <repository-url>
-cd content-gist
-```
+# 1. Clone the repository
+git clone https://github.com/your-username/contentgist.git
+cd contentgist
 
-2. Install dependencies
-```bash
+# 2. Install dependencies
 npm install
-```
 
-3. Set up environment variables (optional)
-```bash
-# Create .env file
-DATABASE_URL=your_postgresql_url  # Optional - uses in-memory storage by default
-STRIPE_SECRET_KEY=your_stripe_secret_key  # For payment processing
-JWT_SECRET=your_jwt_secret  # For authentication
-```
+# 3. Set up environment variables
+cp .env.example .env
+# Edit .env with your actual values (see SETUP.md for details)
 
-4. Start the development server
-```bash
+# 4. Set up the database
+npm run db:push
+
+# 5. Start development servers
 npm run dev
 ```
 
-5. Open http://localhost:5000 in your browser
+Visit http://localhost:5173 to see your application running!
 
-## 📝 Usage
+For detailed setup instructions, see [SETUP.md](SETUP.md).
 
-### For End Users
-1. **Sign Up**: Create an account at `/register`
-2. **Choose Plan**: Select a subscription at `/pricing`  
-3. **Dashboard**: View and manage your scheduled posts at `/dashboard`
-4. **Payment**: Complete subscription via Stripe checkout
+## � Database Schema
 
-### For Administrators
-1. **Login**: Use admin credentials (admin@contentgist.com / password)
-2. **Admin Dashboard**: Access admin panel at `/admin`
-3. **User Management**: View all users and their subscription status
-4. **Content Creation**: Create and schedule posts for users
-5. **Analytics**: Monitor platform usage and statistics
+ContentGist uses a comprehensive PostgreSQL database with the following entities:
 
-## 🗂 Project Structure
+- **Users** - Complete user management with email verification, password reset tokens, and role-based access
+- **Posts** - Content management with multi-platform scheduling and status tracking
+- **Social Accounts** - Connected platform accounts with secure encrypted token storage
+- **Plans & Payments** - Full subscription management and billing history
+- **Analytics** - Performance metrics and engagement data across platforms
 
+### Key Schema Features
+- Email verification with expiring tokens
+- Password reset with secure token handling
+- Encrypted social media tokens
+- Comprehensive audit trails
+- Optimized indexes for performance
+
+## 🌐 API Documentation
+
+### Authentication Endpoints
 ```
-├── client/                 # Frontend React application
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Application pages/routes
-│   │   ├── contexts/       # React contexts (Auth)
-│   │   ├── lib/            # Utility functions
-│   │   └── hooks/          # Custom React hooks
-├── server/                 # Backend Express application  
-│   ├── auth.ts            # Authentication middleware
-│   ├── routes.ts          # API route definitions
-│   ├── storage.ts         # Data storage interface
-│   └── scheduler.ts       # Post scheduling logic
-├── shared/                # Shared TypeScript types
-│   └── schema.ts          # Database schemas and types
-└── README.md
+POST /api/auth/register           # User registration with email verification
+POST /api/auth/login             # User login (requires verified email)
+POST /api/auth/verify-email      # Email verification with token
+POST /api/auth/resend-verification # Resend verification email
+POST /api/auth/forgot-password   # Password reset request
+POST /api/auth/reset-password    # Password reset with token
+GET  /api/auth/me               # Get current user profile
 ```
 
-## 🔧 API Endpoints
+### Content Management
+```
+GET    /api/posts               # Get user's posts
+POST   /api/posts               # Create new post
+PUT    /api/posts/:id           # Update post
+DELETE /api/posts/:id           # Delete post
+POST   /api/posts/:id/schedule  # Schedule post across platforms
+```
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login  
-- `GET /api/auth/me` - Get current user
+### Analytics & Insights
+```
+GET /api/analytics/overview     # Dashboard overview with key metrics
+GET /api/analytics/posts        # Post performance data
+GET /api/analytics/audience     # Audience insights and demographics
+GET /api/analytics/trends       # Trending hashtags and content
+```
 
-### Posts
-- `GET /api/posts` - Get user's posts (or all posts for admin)
-- `POST /api/posts` - Create new post (admin only)
-- `PUT /api/posts/:id` - Update post (admin only)
+### Subscription Management
+```
+GET  /api/plans                 # Get available subscription plans
+POST /api/payments/checkout     # Create Stripe checkout session
+GET  /api/user/plan            # Get user's current plan and usage
+POST /api/payments/webhook     # Stripe webhook handler
+```
 
-### Plans & Payments
-- `GET /api/plans` - Get available subscription plans
-- `POST /api/payments/create-checkout-session` - Create Stripe checkout
+## � Pages & Navigation
 
-### Admin
-- `GET /api/admin/users` - Get all users (admin only)
-- `GET /api/admin/dashboard-stats` - Get platform statistics (admin only)
+### Public Pages
+- **Home** (`/`) - Landing page with hero, features, testimonials
+- **About** (`/about`) - Company information, team, mission, and values
+- **Pricing** (`/pricing`) - Subscription plans and feature comparison
+- **Contact** (`/contact`) - Contact form and company information
+- **Privacy Policy** (`/privacy`) - Comprehensive privacy policy
+- **Terms of Service** (`/terms`) - Detailed terms and conditions
 
-## 🔐 Default Admin Account
+### Authentication Pages
+- **Login** (`/login`) - User login with forgot password link
+- **Register** (`/register`) - User registration with email verification
+- **Verify Email** (`/verify-email`) - Email verification handler
+- **Forgot Password** (`/forgot-password`) - Password reset request
+- **Reset Password** (`/reset-password`) - Password reset form
 
-For testing purposes, a default admin account is created:
-- **Email**: admin@contentgist.com
-- **Password**: password
+### Protected Pages
+- **Dashboard** (`/dashboard`) - User dashboard with post management
+- **Admin Panel** (`/admin`) - Administrative interface (admin only)
 
-## 📦 Deployment
+## � Deployment
 
-### Build for Production
+### Environment Variables
+
+Essential production variables:
 ```bash
-npm run build
+NODE_ENV=production
+DATABASE_URL=your_production_database_url
+JWT_SECRET=your_secure_jwt_secret_64_chars_minimum
+SESSION_SECRET=your_secure_session_secret
+CLIENT_URL=https://your-domain.com
+
+# Email configuration
+SMTP_HOST=your_smtp_host
+SMTP_PORT=587
+SMTP_USER=your_smtp_username
+SMTP_PASS=your_smtp_password
+
+# Stripe (optional but recommended)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
 ```
 
-### Start Production Server
+### Quick Deploy Options
+
+#### Deploy to Vercel (Frontend)
 ```bash
-npm start
+npm i -g vercel
+vercel --prod
 ```
 
-The application will serve both the API and static frontend files on port 5000.
+#### Deploy to Railway (Backend)
+```bash
+npm i -g @railway/cli
+railway login
+railway deploy
+```
 
-### Environment Setup
-- Configure `DATABASE_URL` for PostgreSQL in production
-- Set `STRIPE_SECRET_KEY` for payment processing
-- Set secure `JWT_SECRET` for authentication
-- Configure EmailJS credentials for contact forms
+See [SETUP.md](SETUP.md) for comprehensive deployment instructions including Netlify, Digital Ocean, and other platforms.
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Type checking
+npm run check
+```
+
+## 📈 Performance & Security
+
+### Performance Features
+- **Optimized Database Queries** - Indexed columns and efficient joins
+- **Code Splitting** - Lazy loading for optimal bundle sizes
+- **Image Optimization** - Responsive images with modern formats
+- **Caching Strategy** - Intelligent caching with TanStack Query
+- **Bundle Analysis** - Optimized builds with tree shaking
+
+### Security Measures
+- **Email Verification Required** - No login without verified email
+- **Secure Password Reset** - Time-limited tokens with single use
+- **JWT with Expiration** - Secure tokens with reasonable expiry
+- **Password Hashing** - bcrypt with proper salt rounds
+- **CORS Configuration** - Properly configured cross-origin requests
+- **Rate Limiting** - API rate limiting to prevent abuse
+- **SQL Injection Prevention** - Parameterized queries via Drizzle ORM
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+We welcome contributions! Here's how to get started:
+
+1. **Fork the repository** and clone your fork
+2. **Install dependencies**: `npm install`
+3. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+4. **Set up your environment** following SETUP.md
+5. **Make your changes** and add tests if needed
+6. **Test thoroughly**: `npm test && npm run check`
+7. **Commit your changes**: `git commit -m 'Add amazing feature'`
+8. **Push to your branch**: `git push origin feature/amazing-feature`
+9. **Open a Pull Request** with a clear description
+
+### Development Guidelines
+
+- Follow TypeScript best practices and maintain type safety
+- Write tests for new features and bug fixes
+- Use conventional commit messages
+- Update documentation for user-facing changes
+- Ensure all linter checks pass
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📧 Support
+## � Acknowledgments
 
-For support or questions, contact: ibrahim@contentgist.com
+- [React](https://reactjs.org/) for the amazing frontend framework
+- [shadcn/ui](https://ui.shadcn.com/) for beautiful, accessible components
+- [Drizzle ORM](https://orm.drizzle.team/) for type-safe database operations
+- [Neon](https://neon.tech/) for serverless PostgreSQL hosting
+- [Tailwind CSS](https://tailwindcss.com/) for utility-first styling
+- All the amazing open-source libraries that make this project possible
+
+## 📞 Support & Community
+
+- **Documentation**: [SETUP.md](SETUP.md) for comprehensive setup instructions
+- **Issues**: [GitHub Issues](https://github.com/your-username/contentgist/issues) for bug reports and feature requests
+- **Email**: support@contentgist.com for direct support
+- **Privacy**: privacy@contentgist.com for privacy-related questions
+- **Legal**: legal@contentgist.com for terms and legal inquiries
 
 ---
 
-Built with ❤️ by the ContentGist team
+<div align="center">
+  <p>Made with ❤️ by the ContentGist team</p>
+  <p>
+    <a href="https://contentgist.com">Website</a> •
+    <a href="https://twitter.com/contentgist">Twitter</a> •
+    <a href="https://linkedin.com/company/contentgist">LinkedIn</a>
+  </p>
+</div>

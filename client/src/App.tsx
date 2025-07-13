@@ -24,6 +24,12 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import OAuthDemoPage from './pages/OAuthDemo';
+import About from './pages/About';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Landing Page Component
 const LandingPage = () => {
@@ -81,6 +87,12 @@ function AppContent() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/about" component={About} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/verify-email" component={VerifyEmail} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/reset-password" component={ResetPassword} />
         <Route path="/dashboard">
           <ProtectedRoute>
             <ClientDashboard />

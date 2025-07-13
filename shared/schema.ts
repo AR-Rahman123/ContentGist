@@ -12,6 +12,11 @@ export const users = pgTable("users", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("inactive"), // "active", "inactive", "canceled"
+  emailVerified: boolean("email_verified").default(false),
+  emailVerificationToken: text("email_verification_token"),
+  emailVerificationExpires: timestamp("email_verification_expires"),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
