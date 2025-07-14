@@ -81,6 +81,8 @@ function AppContent() {
         <Route path="/login" component={Login} />
         <Route path="/register" component={Register} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/plans" component={Pricing} />
+        <Route path="/subscription" component={Pricing} />
         <Route path="/dashboard">
           <ProtectedRoute>
             <ClientDashboard />

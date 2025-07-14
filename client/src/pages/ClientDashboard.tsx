@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,11 +22,13 @@ import {
   BarChart3,
   Calendar,
   FileText,
-  Zap
+  Zap,
+  CreditCard
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'wouter';
 import SocialMediaConnect from '@/components/SocialMediaConnect';
 import OAuthTutorial from '@/components/OAuthTutorial';
 
@@ -55,15 +57,37 @@ interface DashboardStats {
 
 const ClientDashboard: React.FC = () => {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [showTutorial, setShowTutorial] = useState(false);
 
-  const { data: userPlan } = useQuery<UserPlan>({
+  const { data: userPlan, isLoading: planLoading } = useQuery<UserPlan>({
     queryKey: ['/api/user/plan'],
     queryFn: async () => {
       const response = await apiRequest('/api/user/plan');
       return response.json();
     }
   });
+
+  // Check if user needs to select a plan
+  useEffect(() => {
+    if (!planLoading && user && (!userPlan || !user.planId)) {
+      // User doesn't have a plan selected, redirect to pricing
+      setTimeout(() => {
+        setLocation('/pricing');
+      }, 2000);
+    }
+  }, [userPlan, user, planLoading, setLocation]);
+
+  // Check for payment success
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      // Payment was successful, show success message
+      alert('Payment successful! Welcome to your new plan.');
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const { data: socialAccounts = [] } = useQuery<SocialAccount[]>({
     queryKey: ['/api/social-accounts'],
@@ -103,6 +127,34 @@ const ClientDashboard: React.FC = () => {
     const usage = getAccountUsage();
     return usage.connected < usage.limit;
   };
+
+  // Show plan selection prompt if no plan
+  if (!planLoading && (!userPlan || !user?.planId)) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md w-full mx-4">
+          <CardHeader className="text-center">
+            <CreditCard className="w-12 h-12 mx-auto mb-4 text-blue-600" />
+            <CardTitle>Select Your Plan</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-gray-600">
+              Welcome! To get started with your social media management, please select a subscription plan.
+            </p>
+            <Button 
+              onClick={() => setLocation('/pricing')}
+              className="w-full"
+            >
+              View Pricing Plans
+            </Button>
+            <p className="text-sm text-gray-500">
+              Redirecting to pricing page...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

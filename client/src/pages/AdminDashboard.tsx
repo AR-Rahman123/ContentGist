@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Calendar, CreditCard, Shield } from 'lucide-react';
+import { Users, FileText, Clock, CheckCircle, Plus, BarChart3, Settings, Calendar, CreditCard, Shield, Facebook, Instagram, Twitter, Linkedin, Youtube, Check } from 'lucide-react';
 import ClientManagerSidebar from '@/components/ClientManagerSidebar';
 import PostScheduler from '@/components/PostScheduler';
 import CalendarView from '@/components/CalendarView';
@@ -30,8 +30,8 @@ export default function AdminDashboard() {
   const [showPostCreator, setShowPostCreator] = useState(false);
   const [initialScheduleDate, setInitialScheduleDate] = useState<string>('');
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'publish' | 'analyze' | 'engage' | 'calendar' | 'billing'>('publish');
-  
+  const [activeTab, setActiveTab] = useState<'publish' | 'analyze' | 'engage' | 'calendar' | 'billing' | 'clients'>('publish');
+
   const handleClientSelect = (clientId: number) => {
     setSelectedClientId(clientId);
   };
@@ -135,6 +135,12 @@ export default function AdminDashboard() {
     );
   }
 
+  const { data: clientsOverview, isLoading: loadingClients } = useQuery({
+    queryKey: ['/api/admin/clients-overview'],
+    enabled: activeTab === 'clients',
+    refetchInterval: 10000 // Refresh every 10 seconds
+  });
+
   return (
     <div className="min-h-screen bg-white flex">
       {/* Buffer-style Header */}
@@ -147,7 +153,7 @@ export default function AdminDashboard() {
               </div>
               <span className="text-xl font-semibold text-gray-900">ContentGist</span>
             </div>
-            
+
             <nav className="flex items-center gap-6">
               <button 
                 onClick={() => setActiveTab('publish')}
@@ -199,6 +205,16 @@ export default function AdminDashboard() {
               >
                 Billing
               </button>
+              <button 
+                onClick={() => setActiveTab('clients')}
+                className={`pb-4 px-2 font-medium border-b-2 transition-colors ${
+                  activeTab === 'clients' 
+                    ? 'text-blue-600 border-blue-600' 
+                    : 'text-gray-600 hover:text-gray-900 border-transparent'
+                }`}
+              >
+                Clients
+              </button>
             </nav>
           </div>
 
@@ -245,7 +261,7 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-            
+
             {sidebarExpanded && (
               <div className="animate-in fade-in duration-200">
                 <ClientManagerSidebar
@@ -255,7 +271,7 @@ export default function AdminDashboard() {
                 />
               </div>
             )}
-            
+
             {!sidebarExpanded && (
               <div className="space-y-3">
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto">
@@ -283,6 +299,7 @@ export default function AdminDashboard() {
                   {activeTab === 'analyze' && 'Analytics'}
                   {activeTab === 'engage' && 'Engagement'}
                   {activeTab === 'billing' && 'Billing & Plans'}
+                  {activeTab === 'clients' && 'Clients'}
                 </h1>
                 {selectedClientId && (
                   <Badge variant="secondary">
@@ -290,7 +307,7 @@ export default function AdminDashboard() {
                   </Badge>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Button variant="outline" size="sm">
                   <BarChart3 className="w-4 h-4 mr-2" />
@@ -385,6 +402,129 @@ export default function AdminDashboard() {
 
             {activeTab === 'billing' && (
               <PricingPlans showCurrentPlan={true} />
+            )}
+
+            {activeTab === 'clients' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2">Client Management</h2>
+                    <p className="text-sm text-gray-600">Manage your clients and their social media accounts</p>
+                  </div>
+                  <Button onClick={() => setShowPostCreator(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Button>
+                </div>
+
+                {loadingClients ? (
+                  <div className="text-center py-8">Loading clients...</div>
+                ) : clientsOverview?.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="text-gray-500">No clients found</div>
+                    <p className="text-sm text-gray-400 mt-2">Clients will appear here after they register</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {clientsOverview?.map((client: any) => {
+                      const platforms = [
+                        { id: 'facebook', name: 'Facebook', icon: Facebook, color: 'bg-blue-600' },
+                        { id: 'instagram', name: 'Instagram', icon: Instagram, color: 'bg-pink-600' },
+                        { id: 'twitter', name: 'Twitter', icon: Twitter, color: 'bg-blue-400' },
+                        { id: 'linkedin', name: 'LinkedIn', icon: Linkedin, color: 'bg-blue-700' },
+                        { id: 'youtube', name: 'YouTube', icon: Youtube, color: 'bg-red-600' }
+                      ];
+
+                      return (
+                        <Card key={client.id} className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <h3 className="font-semibold text-gray-900">{client.name}</h3>
+                              <p className="text-sm text-gray-600">{client.email}</p>
+                              {client.plan && (
+                                <Badge className="mt-1" variant="outline">
+                                  {client.plan.name} Plan - {client.plan.postsLimit} posts/month
+                                </Badge>
+                              )}
+                              <p className="text-xs text-gray-500 mt-1">
+                                Joined {new Date(client.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              onClick={() => {
+                                setSelectedClientId(client.id);
+                                setShowPostCreator(true);
+                              }}
+                            >
+                              Create Post
+                            </Button>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">Post Statistics</h4>
+                              <div className="grid grid-cols-4 gap-2">
+                                <div className="text-center p-2 bg-gray-50 rounded">
+                                  <div className="text-sm font-semibold text-gray-900">{client.postStats.total}</div>
+                                  <div className="text-xs text-gray-600">Total</div>
+                                </div>
+                                <div className="text-center p-2 bg-blue-50 rounded">
+                                  <div className="text-sm font-semibold text-blue-600">{client.postStats.scheduled}</div>
+                                  <div className="text-xs text-gray-600">Scheduled</div>
+                                </div>
+                                <div className="text-center p-2 bg-green-50 rounded">
+                                  <div className="text-sm font-semibold text-green-600">{client.postStats.posted}</div>
+                                  <div className="text-xs text-gray-600">Posted</div>
+                                </div>
+                                <div className="text-center p-2 bg-yellow-50 rounded">
+                                  <div className="text-sm font-semibold text-yellow-600">{client.postStats.pending}</div>
+                                  <div className="text-xs text-gray-600">Pending</div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                                Connected Social Media Accounts ({client.socialAccounts?.length || 0})
+                              </h4>
+                              {client.socialAccounts?.length > 0 ? (
+                                <div className="space-y-2">
+                                  {client.socialAccounts.map((account: any) => {
+                                    const platform = platforms.find(p => p.id === account.platform);
+                                    if (!platform) return null;
+                                    const Icon = platform.icon;
+
+                                    return (
+                                      <div key={account.id} className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded">
+                                        <div className={`w-6 h-6 rounded flex items-center justify-center ${platform.color}`}>
+                                          <Icon className="w-3 h-3 text-white" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <span className="text-sm font-medium text-gray-900">{platform.name}</span>
+                                          <span className="text-xs text-gray-600 ml-2">@{account.accountName}</span>
+                                        </div>
+                                        <Check className="w-4 h-4 text-green-600" />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="p-3 bg-amber-50 border border-amber-200 rounded">
+                                  <p className="text-sm text-amber-800">No social media accounts connected</p>
+                                  <p className="text-xs text-amber-600 mt-1">
+                                    Client needs to connect accounts in their dashboard for automated posting
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
