@@ -2,5 +2,4 @@
   base = "client"
   publish = "dist"
   command = "npm run build"
-  vite build && esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist
 
